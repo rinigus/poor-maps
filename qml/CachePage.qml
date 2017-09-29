@@ -138,15 +138,15 @@ Page {
         });
     }
 
-    function purge(index, directory, age) {
-        // Remove tiles in cache and recalculate statistics.
-        listView.model.setProperty(index, "count", -1);
-        py.call("poor.cache.purge_directory", [directory, age], function(result) {
-            py.call("poor.cache.stat_directory", [directory], function(result) {
-                listView.model.setProperty(index, "count", result.count);
-                listView.model.setProperty(index, "size", result.size);
-            });
-        });
-    }
+    /* function purge(index, directory, age) { */
+    /*     // Remove tiles in cache and recalculate statistics. */
+    /*     listView.model.setProperty(index, "count", -1); */
+    /*     py.call("poor.cache.purge_directory", [directory, age], function(result) { */
+    /*         py.call("poor.cache.stat_directory", [directory], function(result) { */
+    /*             listView.model.setProperty(index, "count", result.count); */
+    /*             listView.model.setProperty(index, "size", result.size); */
+    /*         }); */
+    /*     }); */
+    /* } */
 
 }

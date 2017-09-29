@@ -20,22 +20,32 @@ import QtQuick 2.0
 import QtLocation 5.0
 import QtPositioning 5.3
 import Sailfish.Silica 1.0
+import MapboxMap 1.0
 import "."
 
 import "js/util.js" as Util
 
-Map {
+MapboxMap {
     id: map
     anchors.centerIn: parent
-    center: QtPositioning.coordinate(49, 13)
-    clip: true
-    gesture.enabled: true
+    /* clip: true */
     height: parent.height
-    minimumZoomLevel: 3
-    plugin: MapPlugin {}
-    rotation: 0
     width: parent.width
 
+    center: QtPositioning.coordinate(49,13)
+    zoomLevel: 4.0
+    minimumZoomLevel: 0
+    maximumZoomLevel: 20
+    pixelRatio: 3.0
+
+    // TODO
+    accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjajdkcHM0MWkwYjE4MzBwZml3OTRqOTc4In0.cjKiY1ZtOyS4KPJF0ewwQQ"
+    styleUrl: "mapbox://styles/mapbox/streets-v10"
+
+    // TODO
+    cacheDatabaseMaximalSize: 20*1024*1024
+    cacheDatabasePath: "/tmp/mbgl-cache.db"    
+    
     property bool autoCenter: false
     property bool autoRotate: false
     property bool centerFound: true
@@ -53,7 +63,6 @@ Map {
     property var  route: route
     property real scaleX: 0
     property real scaleY: 0
-    property var  tiles: []
     property real widthCoords: 0
     property real zoomLevelPrev: 8
 
@@ -82,7 +91,7 @@ Map {
         }
     }
 
-    Behavior on rotation {
+    Behavior on bearing {
         RotationAnimation {
             direction: RotationAnimation.Shortest
             duration: map.ready ? 500 : 0
@@ -91,21 +100,12 @@ Map {
     }
 
     MapMouseArea {}
-    MapTimer {}
     NarrationTimer {}
     Route { id: route }
 
     Component.onCompleted: {
         // Load default values and start periodic updates.
         map.initProperties();
-    }
-
-    gesture.onPinchFinished: {
-        // Round piched zoom level to avoid fuzziness.
-        var offset = map.zoomLevel < map.zoomLevelPrev ? -1 : 1;
-        Math.abs(map.zoomLevel - map.zoomLevelPrev) > 0.25 ?
-            map.setZoomLevel(map.zoomLevelPrev + offset) :
-            map.setZoomLevel(map.zoomLevelPrev);
     }
 
     onAutoRotateChanged: {
@@ -118,18 +118,12 @@ Map {
         }
     }
 
-    onCenterChanged: {
-        // Ensure that tiles are updated after panning.
-        // This gets fired ridiculously often, so keep simple.
-        map.changed = true;
-    }
-
     onDirectionChanged: {
         // Update map rotation to match direction.
         var direction = map.direction || 0;
-        if (map.autoRotate && !map.gesture.isPanActive && !map.gesture.isPinchActive &&
+        if (map.autoRotate && // TODO: ensure that ---> !map.gesture.isPanActive && !map.gesture.isPinchActive &&
             Math.abs(direction - directionPrev) > 10) {
-            map.rotation = -direction;
+            map.bearing = -direction;
             map.directionPrev = direction;
         }
     }
@@ -145,38 +139,39 @@ Map {
             map.centerFound = true;
             map.setZoomLevel(14);
             map.centerOnPosition();
-        } else if (map.autoCenter && !map.gesture.isPanActive && !map.gesture.isPinchActive) {
-            // Center map on position if outside center of screen.
-            // map.toScreenPosition returns NaN when outside component and
-            // otherwise actually relative positions inside the map component,
-            // which can differ from the screen when using auto-rotation.
-            var pos = map.toScreenPosition(map.position.coordinate);
-            if (!pos.x || !pos.y)
-                return map.centerOnPosition();
-            var height = app.screenHeight - app.navigationBlock.height;
-            // If the navigation block covers the top part of the screen,
-            // center the position to the part of the map remaining visible.
-            var dy = app.navigationBlock.height / 2;
-            if (map.autoRotate) {
-                // If auto-rotate is on, the user is always heading up
-                // on the screen and should see more ahead than behind.
-                dy += (0.5 - map.constants.navigationCenterY) * height;
-                // Avoid overlap with the menu button. Note that the position marker
-                // height includes the arrow, which points up when navigating,
-                // leaving padding the size of the arrow at the bottom.
-                dy = Math.min(dy, (app.screenHeight/2 -
-                                   app.menuButton.height -
-                                   app.menuButton.anchors.bottomMargin -
-                                   map.positionMarker.height/2));
+        } else if (map.autoCenter /* TODO && !map.gesture.isPanActive && !map.gesture.isPinchActive*/) {
+            map.centerOnPosition();
+//            // Center map on position if outside center of screen.
+//            // map.toScreenPosition returns NaN when outside component and
+//            // otherwise actually relative positions inside the map component,
+//            // which can differ from the screen when using auto-rotation.
+//            var pos = map.toScreenPosition(map.position.coordinate);
+//            if (!pos.x || !pos.y)
+//                return map.centerOnPosition();
+//            var height = app.screenHeight - app.navigationBlock.height;
+//            // If the navigation block covers the top part of the screen,
+//            // center the position to the part of the map remaining visible.
+//            var dy = app.navigationBlock.height / 2;
+//            if (map.autoRotate) {
+//                // If auto-rotate is on, the user is always heading up
+//                // on the screen and should see more ahead than behind.
+//                dy += (0.5 - map.constants.navigationCenterY) * height;
+//                // Avoid overlap with the menu button. Note that the position marker
+//                // height includes the arrow, which points up when navigating,
+//                // leaving padding the size of the arrow at the bottom.
+//                dy = Math.min(dy, (app.screenHeight/2 -
+//                                   app.menuButton.height -
+//                                   app.menuButton.anchors.bottomMargin -
+//                                   map.positionMarker.height/2));
 
-            }
-            // https://en.wikipedia.org/wiki/Azimuth#Cartographical_azimuth
-            var cx = map.width  / 2 + dy * Math.sin(Util.deg2rad(map.rotation));
-            var cy = map.height / 2 + dy * Math.cos(Util.deg2rad(map.rotation));
-            var threshold = map.autoRotate ? 0.12 * height :
-                0.18 * Math.min(app.screenWidth, height);
-            if (Util.eucd(pos.x, pos.y, cx, cy) > threshold)
-                map.centerOnPosition();
+//            }
+//            // https://en.wikipedia.org/wiki/Azimuth#Cartographical_azimuth
+//            var cx = map.width  / 2 + dy * Math.sin(Util.deg2rad(map.rotation));
+//            var cy = map.height / 2 + dy * Math.cos(Util.deg2rad(map.rotation));
+//            var threshold = map.autoRotate ? 0.12 * height :
+//                0.18 * Math.min(app.screenWidth, height);
+//            if (Util.eucd(pos.x, pos.y, cx, cy) > threshold)
+//                map.centerOnPosition();
         }
     }
 
@@ -289,34 +284,8 @@ Map {
 
     function centerOnPosition() {
         // Center map on the current position.
-        if (app.navigationBlock.height > 0 || map.autoRotate) {
-            // If the navigation block covers the top part of the screen,
-            // center the position to the part of the map remaining visible.
-            var dy = app.navigationBlock.height / 2;
-            if (map.autoRotate) {
-                // If auto-rotate is on, the user is always heading up
-                // on the screen and should see more ahead than behind.
-                var height = app.screenHeight - app.navigationBlock.height;
-                dy += (0.5 - map.constants.navigationCenterY) * height;
-                // Avoid overlap with the menu button. Note that the position marker
-                // height includes the arrow, which points up when navigating,
-                // leaving padding the size of the arrow at the bottom.
-                dy = Math.min(dy, (app.screenHeight/2 -
-                                   app.menuButton.height -
-                                   app.menuButton.anchors.bottomMargin -
-                                   map.positionMarker.height/2));
-
-            }
-            var p0 = map.toCoordinate(Qt.point(map.width/2, map.height/2));
-            var p1 = map.toCoordinate(Qt.point(map.width/2, map.height/2 + dy));
-            var coord = map.position.coordinate.atDistanceAndAzimuth(
-                p0.distanceTo(p1), -map.rotation);
-            map.setCenter(coord.longitude, coord.latitude);
-        } else {
-            map.setCenter(map.position.coordinate.longitude,
-                          map.position.coordinate.latitude);
-
-        }
+        map.setCenter(map.position.coordinate.longitude,
+                      map.position.coordinate.latitude);
     }
 
     function clear() {
@@ -342,25 +311,6 @@ Map {
         map.saveRoute();
         map.saveManeuvers();
         map.hasRoute = false;
-    }
-
-    function clearTiles() {
-        // Remove all tiles from the map.
-        Util.removeMapItems(map, map.tiles);
-        map.tiles = [];
-        py.call_sync("poor.app.tilecollection.clear", []);
-        map.changed = true;
-    }
-
-    function demoteTiles() {
-        // Drop basemap tiles to a lower z-level and remove overlays.
-        for (var i = 0; i < map.tiles.length; i++) {
-            if (map.tiles[i].type === "basemap") {
-                map.tiles[i].z = Math.max(1, map.tiles[i].z - 1);
-            } else {
-                map.tiles[i].z = -1;
-            }
-        }
     }
 
     function endNavigating() {
@@ -467,7 +417,6 @@ Map {
             map.centerFound = true;
             map.setCenter(center[0], center[1]);
         }
-        map.updateTiles();
         app.updateKeepAlive();
         map.loadPois();
         map.loadRoute();
@@ -508,35 +457,35 @@ Map {
         map.changed = true;
     }
 
-    function renderTile(props) {
-        // Render tile from local image file.
-        if (props.half_zoom !== map.halfZoom) {
-            map.halfZoom = props.half_zoom;
-            map.setZoomLevel(map.zoomLevel);
-        }
-        for (var i = 0; i < map.tiles.length; i++) {
-            if (map.tiles[i].uid !== props.uid) continue;
-            map.tiles[i].coordinate.latitude = props.nwy;
-            map.tiles[i].coordinate.longitude = props.nwx;
-            map.tiles[i].smooth = props.smooth;
-            map.tiles[i].type = props.type;
-            map.tiles[i].zOffset = props.z;
-            map.tiles[i].zoomLevel = props.display_zoom +
-                (props.half_zoom ? constants.halfZoom : 0);
-            map.tiles[i].uri = props.uri;
-            map.tiles[i].setWidth(props);
-            map.tiles[i].setHeight(props);
-            map.tiles[i].setZ(map.zoomLevel);
-            return;
-        }
-        // Add missing tile to collection.
-        var component = Qt.createComponent("Tile.qml");
-        var tile = component.createObject(map);
-        tile.uid = props.uid;
-        map.tiles.push(tile);
-        map.addMapItem(tile);
-        map.renderTile(props);
-    }
+    /* function renderTile(props) { */
+    /*     // Render tile from local image file. */
+    /*     if (props.half_zoom !== map.halfZoom) { */
+    /*         map.halfZoom = props.half_zoom; */
+    /*         map.setZoomLevel(map.zoomLevel); */
+    /*     } */
+    /*     for (var i = 0; i < map.tiles.length; i++) { */
+    /*         if (map.tiles[i].uid !== props.uid) continue; */
+    /*         map.tiles[i].coordinate.latitude = props.nwy; */
+    /*         map.tiles[i].coordinate.longitude = props.nwx; */
+    /*         map.tiles[i].smooth = props.smooth; */
+    /*         map.tiles[i].type = props.type; */
+    /*         map.tiles[i].zOffset = props.z; */
+    /*         map.tiles[i].zoomLevel = props.display_zoom + */
+    /*             (props.half_zoom ? constants.halfZoom : 0); */
+    /*         map.tiles[i].uri = props.uri; */
+    /*         map.tiles[i].setWidth(props); */
+    /*         map.tiles[i].setHeight(props); */
+    /*         map.tiles[i].setZ(map.zoomLevel); */
+    /*         return; */
+    /*     } */
+    /*     // Add missing tile to collection. */
+    /*     var component = Qt.createComponent("Tile.qml"); */
+    /*     var tile = component.createObject(map); */
+    /*     tile.uid = props.uid; */
+    /*     map.tiles.push(tile); */
+    /*     map.addMapItem(tile); */
+    /*     map.renderTile(props); */
+    /* } */
 
     function saveManeuvers() {
         // Save maneuvers to JSON file.
@@ -599,32 +548,23 @@ Map {
         map.changed = true;
     }
 
-    function setZoomLevel(zoom) {
-        // Set the current zoom level.
-        // Round zoom level so that tiles are displayed pixel for pixel.
-         zoom = map.halfZoom ?
-            Math.ceil(zoom - constants.halfZoom - 0.01) + constants.halfZoom :
-            Math.floor(zoom + 0.01);
-        map.demoteTiles();
-        map.zoomLevel = zoom;
-        map.zoomLevelPrev = zoom;
-        var bbox = map.getBoundingBox();
-        map.widthCoords = bbox[1] - bbox[0];
-        map.heightCoords = bbox[3] - bbox[2];
-        map.scaleX = map.width / map.widthCoords;
-        map.scaleY = map.height / map.heightCoords;
-        map.hasRoute && map.route.redraw();
-        map.changed = true;
-    }
-
-    function showTile(uid) {
-        // Show tile with given uid.
-        for (var i = 0; i < map.tiles.length; i++) {
-            if (map.tiles[i].uid !== uid) continue;
-            map.tiles[i].setZ(map.zoomLevel);
-            break;
-        }
-    }
+    /* function setZoomLevel(zoom) { */
+    /*     // Set the current zoom level. */
+    /*     // Round zoom level so that tiles are displayed pixel for pixel. */
+    /*      zoom = map.halfZoom ? */
+    /*         Math.ceil(zoom - constants.halfZoom - 0.01) + constants.halfZoom : */
+    /*         Math.floor(zoom + 0.01); */
+    /*     map.demoteTiles(); */
+    /*     map.zoomLevel = zoom; */
+    /*     map.zoomLevelPrev = zoom; */
+    /*     var bbox = map.getBoundingBox(); */
+    /*     map.widthCoords = bbox[1] - bbox[0]; */
+    /*     map.heightCoords = bbox[3] - bbox[2]; */
+    /*     map.scaleX = map.width / map.widthCoords; */
+    /*     map.scaleY = map.height / map.heightCoords; */
+    /*     map.hasRoute && map.route.redraw(); */
+    /*     map.changed = true; */
+    /* } */
 
     function updateSize() {
         // Update map width and height to match environment.
@@ -641,25 +581,4 @@ Map {
         map.hasRoute && map.route.redraw();
         map.changed = true;
     }
-
-    function updateTiles() {
-        // Ask the Python backend to download missing tiles.
-        if (!py.ready) return;
-        if (map.width <= 0 || map.height <= 0) return;
-        if (map.gesture.isPinchActive) return;
-        var bbox = map.getBoundingBox();
-        py.call("poor.app.update_tiles",
-                [bbox[0], bbox[1], bbox[2], bbox[3],
-                 Math.floor(map.zoomLevel),
-                 map.constants.canvasScaleFactor],
-                null);
-
-        map.widthCoords = bbox[1] - bbox[0];
-        map.heightCoords = bbox[3] - bbox[2];
-        map.scaleX = map.width / map.widthCoords;
-        map.scaleY = map.height / map.heightCoords;
-        app.scaleBar.update();
-        map.changed = false;
-    }
-
 }

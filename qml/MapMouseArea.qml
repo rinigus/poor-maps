@@ -19,17 +19,126 @@
 import QtQuick 2.0
 import QtPositioning 5.3
 
-MouseArea {
+//! Panning and pinch implementation on the maps
+PinchArea {
+    id: pincharea
+
+    //! Holds previous zoom level value
+    property double __oldZoom
+
     anchors.fill: parent
-    onClicked: map.hidePoiBubbles();
-    onDoubleClicked: map.centerOnPosition();
-    onPressAndHold: {
-        var coord = map.toCoordinate(Qt.point(mouse.x, mouse.y));
-        map.addPois([{
-            "x": coord.longitude,
-            "y": coord.latitude,
-            "title": app.tr("Unnamed point"),
-            "text": app.tr("Unnamed point")
-        }]);
+
+    //! Calculate zoom level
+    function calcZoomDelta(zoom, percent) {
+        return zoom + Math.log(percent)/Math.log(2)
+    }
+
+    //! Save previous zoom level when pinch gesture started
+    onPinchStarted: {
+        //console.log("Pinch started")
+        __oldZoom = map.zoomLevel
+    }
+
+    //! Update map's zoom level when pinch is updating
+    onPinchUpdated: {
+        //map.zoomLevel = calcZoomDelta(__oldZoom, pinch.scale)
+        map.setZoomLevel(calcZoomDelta(__oldZoom, pinch.scale), pinch.center)
+    }
+
+    //! Update map's zoom level when pinch is finished
+    onPinchFinished: {
+        //map.zoomLevel = calcZoomDelta(__oldZoom, pinch.scale)
+        map.setZoomLevel(calcZoomDelta(__oldZoom, pinch.scale), pinch.center)
+
+//        // TODO
+//        // ORIGINAL CODE, MAYBE NEEDED FOR RASTER TILES IN FUTURE. NOT ADAPTED YET
+//        // Round piched zoom level to avoid fuzziness.
+//        var offset = map.zoomLevel < map.zoomLevelPrev ? -1 : 1;
+//        Math.abs(map.zoomLevel - map.zoomLevelPrev) > 0.25 ?
+//                    map.setZoomLevel(map.zoomLevelPrev + offset) :
+//                    map.setZoomLevel(map.zoomLevelPrev);
+    }
+
+
+    //! Map's mouse area for implementation of panning in the map and zoom on double click
+    MouseArea {
+        id: mousearea
+
+        //! Property used to indicate if panning the map
+        property bool __isPanning: false
+
+        //! Last pressed X and Y position
+        property int __lastX: -1
+        property int __lastY: -1
+
+        anchors.fill : parent
+
+        //! When pressed, indicate that panning has been started and update saved X and Y values
+        onPressed: {
+            __isPanning = true
+            __lastX = mouse.x
+            __lastY = mouse.y
+        }
+
+        //! When released, indicate that panning has finished
+        onReleased: {
+            __isPanning = false
+        }
+
+        //! Move the map when panning
+        onPositionChanged: {
+            if (__isPanning) {
+                var dx = mouse.x - __lastX
+                var dy = mouse.y - __lastY
+                map.pan(dx, dy)
+                __lastX = mouse.x
+                __lastY = mouse.y
+            }
+        }
+
+        //! When canceled, indicate that panning has finished
+        onCanceled: {
+            __isPanning = false;
+        }
+
+        onPressAndHold: {
+            map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
+        }
+
+        onDoubleClicked: {
+            map.center = map.position.coordinate
+        }
+    }
+
+    Connections {
+        target: map
+
+        onReplyCoordinateForPixel: {
+            console.log("Coordinate: " + pixel + " " + geocoordinate.latitude + " " + geocoordinate.longitude + " " + tag)
+
+            if (tag !== "mouse onPressAndHold") return;
+
+            map.addPois([{
+                             "x": geocoordinate.longitude,
+                             "y": geocoordinate.latitude,
+                             "title": app.tr("Unnamed point"),
+                             "text": app.tr("Unnamed point")
+                         }]);
+        }
     }
 }
+
+/* MouseArea { */
+/*     anchors.fill: parent */
+/*     onClicked: map.hidePoiBubbles(); */
+/*     onDoubleClicked: map.centerOnPosition(); */
+/*     onPressAndHold: { */
+/*         var coord = map.toCoordinate(Qt.point(mouse.x, mouse.y)); */
+/*         map.addPois([{ */
+/*             "x": coord.longitude, */
+/*             "y": coord.latitude, */
+/*             "title": app.tr("Unnamed point"), */
+/*             "text": app.tr("Unnamed point") */
+/*         }]); */
+/*     } */
+/* } */

@@ -123,6 +123,6 @@ Item {
 
     Connections {
         target: map
-        onMetersPerPixelChanged: update(false)
+        onMetersPerPixelChanged: scaleBar.update(false)
     }
 }

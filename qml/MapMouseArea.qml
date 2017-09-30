@@ -101,9 +101,9 @@ PinchArea {
             __isPanning = false;
         }
 
-        onPressAndHold: {
-            map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
-        }
+        onPressAndHold: map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
+
+        onClicked: map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onClicked")
 
         onDoubleClicked: {
             map.center = map.position.coordinate
@@ -114,16 +114,22 @@ PinchArea {
         target: map
 
         onReplyCoordinateForPixel: {
-            console.log("Coordinate: " + pixel + " " + geocoordinate.latitude + " " + geocoordinate.longitude + " " + tag)
+            //console.log("Coordinate: " + pixel + " " + geocoordinate.latitude + " " + geocoordinate.longitude + " " + tag)
 
-            if (tag !== "mouse onPressAndHold") return;
+            if (tag === "mouse onPressAndHold") {
+                map.addPois([{
+                                 "x": coordinate.longitude,
+                                 "y": coordinate.latitude,
+                                 "title": app.tr("Unnamed point"),
+                                 "text": app.tr("Unnamed point")
+                             }]);
+                return;
+            }
 
-            map.addPois([{
-                             "x": geocoordinate.longitude,
-                             "y": geocoordinate.latitude,
-                             "title": app.tr("Unnamed point"),
-                             "text": app.tr("Unnamed point")
-                         }]);
+            if (tag === "mouse onClicked") {
+                map.mouseClick(geocoordinate, degLatPerPixel, degLonPerPixel)
+                return;
+            }
         }
     }
 }

@@ -36,7 +36,10 @@ MapboxMap {
     zoomLevel: 4.0
     minimumZoomLevel: 0
     maximumZoomLevel: 20
-    pixelRatio: 3.0
+
+    // Theme.pixelRatio is relative to the Jolla 1,
+    // which is maybe around 1.5 in terms of map scales.
+    pixelRatio: Theme.pixelRatio * 1.5
 
     // TODO
     accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjajdkcHM0MWkwYjE4MzBwZml3OTRqOTc4In0.cjKiY1ZtOyS4KPJF0ewwQQ"
@@ -58,11 +61,17 @@ MapboxMap {
     property var  maneuvers: []
     property var  pois: []
     property var  position: gps.position
-    property var  positionMarker: PositionMarker {}
     property bool ready: false
     property var  route: route
     property real scaleX: 0
     property real scaleY: 0
+
+    // layer that is existing in the current style and
+    // which can be used to position route and other layers
+    // under to avoid covering important map features, such
+    // as labels.
+    property string styleReferenceLayer: "waterway-label"
+
     property real widthCoords: 0
     property real zoomLevelPrev: 8
 
@@ -101,6 +110,7 @@ MapboxMap {
 
     MapMouseArea {}
     NarrationTimer {}
+    PositionMarker { id: positionMarker }
     Route { id: route }
 
     Component.onCompleted: {
@@ -173,6 +183,24 @@ MapboxMap {
 //            if (Util.eucd(pos.x, pos.y, cx, cy) > threshold)
 //                map.centerOnPosition();
         }
+    }
+
+    function mouseClick(coordinate, degLatPerPixel, degLonPerPixel) {
+        // Process mouse clicks by comparing them with the current position,
+        // and POIs
+
+        // 15 pixels at 96dpi would correspond to 4 mm
+        var nearby_lat = map.pixelRatio * 15 * degLatPerPixel;
+        var nearby_lon = map.pixelRatio * 15 * degLonPerPixel;
+
+        // check if its current position
+        if ( Math.abs(coordinate.longitude - map.position.coordinate.longitude) < nearby_lon &&
+                Math.abs(coordinate.latitude - map.position.coordinate.latitude) < nearby_lat ) {
+            positionMarker.mouseClick();
+            return;
+        }
+
+        //console.log("Unknown click")
     }
 
     function addManeuvers(maneuvers) {

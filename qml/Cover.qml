@@ -167,8 +167,8 @@ CoverBackground {
 
     function updatePositionMarker() {
         // Update position marker from map equivalent.
-        positionMarker.x = cover.mapXToCoverX(map.positionMarker.x);
-        positionMarker.y = cover.mapYToCoverY(map.positionMarker.y);
+//        positionMarker.x = cover.mapXToCoverX(map.positionMarker.x);
+//        positionMarker.y = cover.mapYToCoverY(map.positionMarker.y);
     }
 
     /* function updateTiles() { */

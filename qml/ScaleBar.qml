@@ -90,6 +90,8 @@ Item {
     }
 
     function update(force) {
+        if (!py.ready) return;
+
         // Update scalebar for current zoom level and latitude.
         //force = force || false;
 
@@ -123,6 +125,11 @@ Item {
 
     Connections {
         target: map
-        onMetersPerPixelChanged: scaleBar.update(false)
+        onMetersPerPixelChanged: scaleBar.update()
+    }
+
+    Connections {
+        target: py
+        onReadyChanged: scaleBar.update()
     }
 }

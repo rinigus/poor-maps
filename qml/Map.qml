@@ -90,6 +90,13 @@ MapboxMap {
         // can be shown pixel for pixel. The exact value is log2(1.5),
         // but QML's JavaScript doesn't have Math.log2.
         property real halfZoom: 0.5849625
+
+        // Mapbox sources, layers, and images
+        property string sourcePois: "pm-source-pois"
+
+        property string imagePoi: "pm-image-poi"
+
+        property string layerPois: "pm-layer-pois"
     }
 
     Behavior on center {
@@ -113,7 +120,7 @@ MapboxMap {
     Route { id: route }
 
     Component.onCompleted: {
-        // Load default values and start periodic updates.
+        map.initLayers();
         map.initProperties();
     }
 
@@ -197,7 +204,15 @@ MapboxMap {
             return;
         }
 
-        //console.log("Unknown click")
+        for (var i = 0; i < map.pois.length; i++) {
+            if ( Math.abs(coordinate.longitude - map.pois[i].coordinate.longitude) < nearby_lon &&
+                    Math.abs(coordinate.latitude - map.pois[i].coordinate.latitude) < nearby_lat ) {
+                console.log("POI pressed: " + map.pois[i]);
+                return;
+            }
+        }
+
+        console.log("Unknown click - let's close all POI dialogs")
     }
 
     function addManeuvers(maneuvers) {
@@ -242,15 +257,24 @@ MapboxMap {
          */
         var component, poi;
         for (var i = 0; i < pois.length; i++) {
-            component = Qt.createComponent("PoiMarker.qml");
-            poi = component.createObject(map);
-            poi.coordinate = QtPositioning.coordinate(pois[i].y, pois[i].x);
-            poi.title = pois[i].title || "";
-            poi.text = pois[i].text || "";
-            poi.link = pois[i].link || ""
+//            component = Qt.createComponent("PoiMarker.qml");
+//            poi = component.createObject(map);
+//            poi.coordinate = QtPositioning.coordinate(pois[i].y, pois[i].x);
+//            poi.title = pois[i].title || "";
+//            poi.text = pois[i].text || "";
+//            poi.link = pois[i].link || ""
+//            map.pois.push(poi);
+
+            poi = {
+                "coordinate": QtPositioning.coordinate(pois[i].y, pois[i].x),
+                "title": pois[i].title || "",
+                "text": pois[i].text || "",
+                "link": pois[i].link || ""
+            }
             map.pois.push(poi);
-            map.addMapItem(poi);
         }
+
+        map.updateMapPois();
         map.savePois();
     }
 
@@ -321,8 +345,8 @@ MapboxMap {
 
     function clearPois() {
         // Remove all point of interest from the map.
-        Util.removeMapItems(map, map.pois);
         map.pois = [];
+        map.updateMapPois();
         map.savePois();
     }
 
@@ -426,6 +450,24 @@ MapboxMap {
             map.pois[i].bubbleVisible = false;
     }
 
+    function initLayers() {
+        map.addSourcePoints(constants.sourcePois, [QtPositioning.coordinate(59.436962, 24.753574)]);
+        map.addImagePath(constants.imagePoi, Qt.resolvedUrl(app.getIcon("icons/poi")))
+
+        map.addLayer(constants.layerPois, {"type": "symbol", "source": constants.sourcePois}, map.styleReferenceLayer);
+        map.setLayoutProperty(constants.layerPois, "icon-image", constants.imagePoi);
+        map.setLayoutProperty(constants.layerPois, "icon-size", 1.0 / map.pixelRatio);
+        map.setLayoutProperty(constants.layerPois, "icon-allow-overlap", true);
+
+        map.setLayoutProperty(constants.layerPois, "text-optional", true);
+        map.setLayoutProperty(constants.layerPois, "text-field", "{name}");
+        map.setLayoutProperty(constants.layerPois, "text-size", 12);
+        map.setLayoutProperty(constants.layerPois, "text-anchor", "top");
+        map.setLayoutPropertyList(constants.layerPois, "text-offset", [0.0, 1.0]);
+        map.setPaintProperty(constants.layerPois, "text-halo-color", "white");
+        map.setPaintProperty(constants.layerPois, "text-halo-width", 2);
+    }
+
     function initProperties() {
         // Load default values and start periodic updates.
         if (!py.ready)
@@ -447,6 +489,18 @@ MapboxMap {
         map.loadRoute();
         map.loadManeuvers();
         map.ready = true;
+    }
+
+    function updateMapPois() {
+        // update POIs drawn on the map
+        var p = [];
+        var n = [];
+        for (var i = 0; i < map.pois.length; i++) {
+            p.push(map.pois[i].coordinate);
+            n.push(map.pois[i].title);
+        }
+
+        map.updateSourcePoints(constants.sourcePois, p, n);
     }
 
     function loadManeuvers() {

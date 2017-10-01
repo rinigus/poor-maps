@@ -100,32 +100,12 @@ Item {
 
         scaleBar.scaleWidth = dist / map.metersPerPixel
         scaleBar.text = py.call_sync("poor.util.format_distance", [dist, 1]);
-
-        // TODO: try to benchmark if we need to reduce number of updates
-//        var x = map.center.longitude;
-//        var y = map.center.latitude;
-//        if (!force &&
-//            map.zoomLevel === scaleBar.zoomLevelPrev &&
-//            Math.abs(y - scaleBar.coordPrev.latitude) < 0.1) return;
-//        var bbox = map.getBoundingBox();
-//        var tail = QtPositioning.coordinate(y, bbox[1]);
-//        var dist = parent.width/map.width * map.center.distanceTo(tail)/2;
-//        var dist = scaleBar.roundedDistace(dist);
-//        var tail = map.center.atDistanceAndAzimuth(dist, 45);
-//        var xend = Util.xcoord2xpos(tail.longitude, bbox[0], bbox[1], map.width);
-//        var yend = Util.ycoord2ypos(tail.latitude, bbox[2], bbox[3], map.height);
-//        var xd = Util.xcoord2xpos(x, bbox[0], bbox[1], map.width) - xend;
-//        var yd = Util.ycoord2ypos(y, bbox[2], bbox[3], map.height) - yend;
-//        scaleBar.scaleWidth = Math.sqrt(xd*xd + yd*yd);
-//        scaleBar.text = py.call_sync("poor.util.format_distance", [dist, 1]);
-//        scaleBar.coordPrev.longitude = map.center.longitude;
-//        scaleBar.coordPrev.latitude = map.center.latitude;
-//        scaleBar.zoomLevelPrev = map.zoomLevel;
     }
 
     Connections {
         target: map
         onMetersPerPixelChanged: scaleBar.update()
+        onWidthChanged: scaleBar.update()
     }
 
     Connections {

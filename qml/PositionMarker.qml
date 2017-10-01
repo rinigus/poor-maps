@@ -31,8 +31,8 @@ Item {
         property string imageMoving: "pm-image-moving"
 
         property string layerUncertainty: "pm-layer-position-uncertain"
-//        property string layerDot: "pm-layer-position-dot"
-//        property string layerCircle: "pm-layer-position-circle"
+        //        property string layerDot: "pm-layer-position-dot"
+        //        property string layerCircle: "pm-layer-position-circle"
         property string layerStill: "pm-layer-position-still"
         property string layerMoving: "pm-layer-position-moving"
     }
@@ -53,15 +53,15 @@ Item {
         map.setPaintProperty(constants.layerUncertainty, "circle-color", "#87cefa");
         map.setPaintProperty(constants.layerUncertainty, "circle-opacity", 0.15);
 
-//        map.addLayer(constants.layerDot, {"type": "circle", "source": constants.sourceName}, map.styleReferenceLayer);
-//        map.setPaintProperty(constants.layerDot, "circle-radius", 6);
-//        map.setPaintProperty(constants.layerDot, "circle-color", "#819FFF");
+        //        map.addLayer(constants.layerDot, {"type": "circle", "source": constants.sourceName}, map.styleReferenceLayer);
+        //        map.setPaintProperty(constants.layerDot, "circle-radius", 6);
+        //        map.setPaintProperty(constants.layerDot, "circle-color", "#819FFF");
 
-//        map.addLayer(constants.layerCircle, {"type": "circle", "source": constants.sourceName}, map.styleReferenceLayer);
-//        map.setPaintProperty(constants.layerCircle, "circle-radius", 12);
-//        map.setPaintProperty(constants.layerCircle, "circle-opacity", 0);
-//        map.setPaintProperty(constants.layerCircle, "circle-stroke-width", 6);
-//        map.setPaintProperty(constants.layerCircle, "circle-stroke-color", "#819FFF");
+        //        map.addLayer(constants.layerCircle, {"type": "circle", "source": constants.sourceName}, map.styleReferenceLayer);
+        //        map.setPaintProperty(constants.layerCircle, "circle-radius", 12);
+        //        map.setPaintProperty(constants.layerCircle, "circle-opacity", 0);
+        //        map.setPaintProperty(constants.layerCircle, "circle-stroke-width", 6);
+        //        map.setPaintProperty(constants.layerCircle, "circle-stroke-color", "#819FFF");
 
         map.addLayer(constants.layerStill, {"type": "symbol", "source": constants.sourceName}, map.styleReferenceLayer);
         map.setLayoutProperty(constants.layerStill, "icon-image", constants.imageStill);
@@ -78,7 +78,7 @@ Item {
     }
 
     function setUncertainty() {
-        if (map.position.horizontalAccuracyValid && map.position.horizontalAccuracy >= 0)
+        if (map.position.horizontalAccuracyValid)
             map.setPaintProperty(constants.layerUncertainty, "circle-radius",
                                  map.position.horizontalAccuracy / map.metersPerPixel / map.pixelRatio);
         else
@@ -114,9 +114,9 @@ Item {
     }
 
     Component.onCompleted: {
-        init()
-        setUncertainty()
-        setLayers()
+        init();
+        setUncertainty();
+        setLayers();
     }
 
     Connections {

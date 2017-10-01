@@ -77,9 +77,9 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        py.setHandler("queue-update", map.queueUpdate);
-        py.setHandler("render-tile", map.renderTile);
-        py.setHandler("show-tile", map.showTile);
+//        py.setHandler("queue-update", map.queueUpdate);
+//        py.setHandler("render-tile", map.renderTile);
+//        py.setHandler("show-tile", map.showTile);
     }
 
     Component.onDestruction: {

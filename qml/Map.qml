@@ -52,7 +52,6 @@ MapboxMap {
     property bool autoCenter: false
     property bool autoRotate: false
     property bool centerFound: true
-    property bool changed: true
     property var  direction: app.navigationDirection || gps.direction
     property var  directionPrev: 0
     property bool halfZoom: false
@@ -480,11 +479,6 @@ MapboxMap {
         });
     }
 
-    function queueUpdate() {
-        // Mark map as changed to trigger an update.
-        map.changed = true;
-    }
-
     /* function renderTile(props) { */
     /*     // Render tile from local image file. */
     /*     if (props.half_zoom !== map.halfZoom) { */
@@ -573,7 +567,6 @@ MapboxMap {
         // Create a new object to trigger animation.
         if (!x || !y) return;
         map.center = QtPositioning.coordinate(y, x);
-        map.changed = true;
     }
 
     /* function setZoomLevel(zoom) { */
@@ -607,6 +600,5 @@ MapboxMap {
             map.height = parent.height;
         }
         map.hasRoute && map.route.redraw();
-        map.changed = true;
     }
 }

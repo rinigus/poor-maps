@@ -105,17 +105,13 @@ PinchArea {
 
         onClicked: map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onClicked")
 
-        onDoubleClicked: {
-            map.center = map.position.coordinate
-        }
+        onDoubleClicked: map.centerOnPosition();
     }
 
     Connections {
         target: map
 
         onReplyCoordinateForPixel: {
-            //console.log("Coordinate: " + pixel + " " + geocoordinate.latitude + " " + geocoordinate.longitude + " " + tag)
-
             if (tag === "mouse onPressAndHold") {
                 map.addPois([{
                                  "x": coordinate.longitude,

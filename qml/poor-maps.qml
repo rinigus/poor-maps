@@ -104,7 +104,7 @@ ApplicationWindow {
     }
 
     function clearMenu() {
-        console.log("clearMenu TODO")
+        app.pageStack.pop();
 //        // Clear the page stack and hide the menu.
 //        app.pageStack.pop(dummy, PageStackAction.Immediate);
 //        app.hideMenu();

@@ -71,13 +71,21 @@ PinchArea {
         property int __lastX: -1
         property int __lastY: -1
 
+        //! Panned distance to distinguish panning from clicks
+        property int __pannedDistance: 0
+
         anchors.fill : parent
+
+        function isPanning() {
+            return __isPanning && __pannedDistance > 0;
+        }
 
         //! When pressed, indicate that panning has been started and update saved X and Y values
         onPressed: {
             __isPanning = true
             __lastX = mouse.x
             __lastY = mouse.y
+            __pannedDistance = 0
         }
 
         //! When released, indicate that panning has finished
@@ -93,6 +101,7 @@ PinchArea {
                 map.pan(dx, dy)
                 __lastX = mouse.x
                 __lastY = mouse.y
+                __pannedDistance += Math.abs(dx) + Math.abs(dy);
             }
         }
 
@@ -101,11 +110,11 @@ PinchArea {
             __isPanning = false;
         }
 
-        onPressAndHold: !__isPanning && map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
+        onPressAndHold: !isPanning() && map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
 
-        onClicked: !__isPanning && map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onClicked")
+        onClicked: !isPanning() && map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onClicked")
 
-        onDoubleClicked: !__isPanning && map.centerOnPosition();
+        onDoubleClicked: !isPanning() && map.centerOnPosition();
     }
 
     Connections {

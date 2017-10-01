@@ -101,11 +101,11 @@ PinchArea {
             __isPanning = false;
         }
 
-        onPressAndHold: map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
+        onPressAndHold: !__isPanning && map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onPressAndHold")
 
-        onClicked: map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onClicked")
+        onClicked: !__isPanning && map.queryCoordinateForPixel(Qt.point(mouse.x, mouse.y), "mouse onClicked")
 
-        onDoubleClicked: map.centerOnPosition();
+        onDoubleClicked: !__isPanning && map.centerOnPosition();
     }
 
     Connections {
@@ -114,8 +114,8 @@ PinchArea {
         onReplyCoordinateForPixel: {
             if (tag === "mouse onPressAndHold") {
                 map.addPois([{
-                                 "x": coordinate.longitude,
-                                 "y": coordinate.latitude,
+                                 "x": geocoordinate.longitude,
+                                 "y": geocoordinate.latitude,
                                  "title": app.tr("Unnamed point"),
                                  "text": app.tr("Unnamed point")
                              }]);

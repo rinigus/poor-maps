@@ -118,12 +118,10 @@ MapboxMap {
     }
 
     onAutoRotateChanged: {
-        // Update map size and rotation.
-        map.updateSize();
         if (map.autoRotate && map.direction) {
-            map.rotation = -map.direction;
+            map.bearing = -map.direction;
         } else {
-            map.rotation = 0;
+            map.bearing = 0;
         }
     }
 
@@ -587,18 +585,18 @@ MapboxMap {
     /*     map.changed = true; */
     /* } */
 
-    function updateSize() {
-        // Update map width and height to match environment.
-        if (map.autoRotate) {
-            var dim = Math.floor(Math.sqrt(
-                parent.width * parent.width +
-                    parent.height * parent.height));
-            map.width = dim;
-            map.height = dim;
-        } else {
-            map.width = parent.width;
-            map.height = parent.height;
-        }
-        map.hasRoute && map.route.redraw();
-    }
+//    function updateSize() {
+//        // Update map width and height to match environment.
+//        if (map.autoRotate) {
+//            var dim = Math.floor(Math.sqrt(
+//                parent.width * parent.width +
+//                    parent.height * parent.height));
+//            map.width = dim;
+//            map.height = dim;
+//        } else {
+//            map.width = parent.width;
+//            map.height = parent.height;
+//        }
+//        map.hasRoute && map.route.redraw();
+//    }
 }

@@ -126,7 +126,7 @@ MapboxMap {
 
     onAutoRotateChanged: {
         if (map.autoRotate && map.direction) {
-            map.bearing = -map.direction;
+            map.bearing = map.direction;
         } else {
             map.bearing = 0;
         }
@@ -137,7 +137,7 @@ MapboxMap {
         var direction = map.direction || 0;
         if (map.autoRotate && // TODO: ensure that ---> !map.gesture.isPanActive && !map.gesture.isPinchActive &&
             Math.abs(direction - directionPrev) > 10) {
-            map.bearing = -direction;
+            map.bearing = direction;
             map.directionPrev = direction;
         }
     }

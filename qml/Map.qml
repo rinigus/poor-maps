@@ -277,14 +277,6 @@ MapboxMap {
          */
         var component, poi;
         for (var i = 0; i < pois.length; i++) {
-//            component = Qt.createComponent("PoiMarker.qml");
-//            poi = component.createObject(map);
-//            poi.coordinate = QtPositioning.coordinate(pois[i].y, pois[i].x);
-//            poi.title = pois[i].title || "";
-//            poi.text = pois[i].text || "";
-//            poi.link = pois[i].link || ""
-//            map.pois.push(poi);
-
             poi = {
                 "coordinate": QtPositioning.coordinate(pois[i].y, pois[i].x),
                 "title": pois[i].title || "",
@@ -392,39 +384,9 @@ MapboxMap {
     }
 
     function fitViewtoCoordinates(coords) {
-        // Set center and zoom so that all points are visible.
-        if (coords.length === 0) return;
-        var xmin = 360, xmax = -360;
-        var ymin = 360, ymax = -360;
-        for (var i = 0; i < coords.length; i++) {
-            var x = coords[i].longitude;
-            var y = coords[i].latitude;
-            if (x < xmin) xmin = x;
-            if (x > xmax) xmax = x;
-            if (y < ymin) ymin = y;
-            if (y > ymax) ymax = y;
-        }
-        var xc = (xmin + xmax) / 2;
-        var yc = (ymin + ymax) / 2;
         map.autoCenter = false;
         map.autoRotate = false;
-        map.setZoomLevel(map.minimumZoomLevel);
-        map.setCenter(xc, yc);
-        // Calculate the greatest offset of a single point from the center
-        // of the screen and based on that the maximum zoom that will still
-        // keep all points visible.
-        var offset = 0;
-        var xr = map.widthCoords  / 2;
-        var yr = map.heightCoords / 2;
-        for (var i = 0; i < coords.length; i++) {
-            var xp = Math.abs(coords[i].longitude - xc) / xr;
-            var yp = Math.abs(coords[i].latitude  - yc) / yr;
-            if (xp > offset) offset = xp;
-            if (yp > offset) offset = yp;
-        }
-        for (var i = map.zoomLevel; offset < 0.5 && i < 16; i++)
-            offset *= 2;
-        map.setZoomLevel(i);
+        map.fitView(coords);
     }
 
     function fitViewToPois(pois) {
@@ -450,12 +412,12 @@ MapboxMap {
         map.fitViewtoCoordinates(coords);
     }
 
-    function getBoundingBox() {
-        // Return currently visible [xmin, xmax, ymin, ymax].
-        var nw = map.toCoordinate(Qt.point(0, 0));
-        var se = map.toCoordinate(Qt.point(map.width, map.height));
-        return [nw.longitude, se.longitude, se.latitude, nw.latitude];
-    }
+//    function getBoundingBox() {
+//        // Return currently visible [xmin, xmax, ymin, ymax].
+//        var nw = map.toCoordinate(Qt.point(0, 0));
+//        var se = map.toCoordinate(Qt.point(map.width, map.height));
+//        return [nw.longitude, se.longitude, se.latitude, nw.latitude];
+//    }
 
     function getPosition() {
         // Return the current position as [x,y].

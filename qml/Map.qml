@@ -135,8 +135,7 @@ MapboxMap {
     onDirectionChanged: {
         // Update map rotation to match direction.
         var direction = map.direction || 0;
-        if (map.autoRotate && // TODO: ensure that ---> !map.gesture.isPanActive && !map.gesture.isPinchActive &&
-            Math.abs(direction - directionPrev) > 10) {
+        if (map.autoRotate && Math.abs(direction - directionPrev) > 10) {
             map.bearing = direction;
             map.directionPrev = direction;
         }
@@ -153,7 +152,7 @@ MapboxMap {
             map.centerFound = true;
             map.setZoomLevel(14);
             map.centerOnPosition();
-        } else if (map.autoCenter /* TODO && !map.gesture.isPanActive && !map.gesture.isPinchActive*/) {
+        } else if (map.autoCenter) {
             map.centerOnPosition();
 //            // Center map on position if outside center of screen.
 //            // map.toScreenPosition returns NaN when outside component and
@@ -208,13 +207,32 @@ MapboxMap {
             if ( Math.abs(coordinate.longitude - map.pois[i].coordinate.longitude) < nearby_lon &&
                     Math.abs(coordinate.latitude - map.pois[i].coordinate.latitude) < nearby_lat ) {
                 if (!map.pois[i].bubble) {
-                    console.log("POI pressed: " + map.pois[i]);
+                    var component = Qt.createComponent("PoiMarker.qml");
+                    var poi = map.pois[i];
+                    var trackid = "POI bubble: " + String(poi.coordinate);
+                    var bubble = component.createObject(map, {
+                                                            "coordinate": poi.coordinate,
+                                                            "trackerId": trackid,
+                                                            "title": poi.title,
+                                                            "text": poi.text,
+                                                            "link": poi.link
+                                                        } );
+
+                    map.trackLocation(trackid, poi.coordinate);
+                    map.pois[i].bubble = bubble;
                 }
                 return;
             }
         }
 
-        console.log("Unknown click - let's close all POI dialogs")
+        // Unknown click - let's close all POI dialogs
+        for (var i = 0; i < map.pois.length; i++) {
+            if (map.pois[i].bubble) {
+                map.removeLocationTracking(map.pois[i].bubble.trackerId);
+                map.pois[i].bubble.destroy();
+                map.pois[i].bubble = false;
+            }
+        }
     }
 
     function addManeuvers(maneuvers) {
@@ -453,7 +471,7 @@ MapboxMap {
     }
 
     function initLayers() {
-        map.addSourcePoints(constants.sourcePois, [QtPositioning.coordinate(59.436962, 24.753574)]);
+        map.addSourcePoints(constants.sourcePois, []);
         map.addImagePath(constants.imagePoi, Qt.resolvedUrl(app.getIcon("icons/poi")))
 
         // since we have text labels, put the symbols on top

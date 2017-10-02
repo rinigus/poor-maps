@@ -207,7 +207,9 @@ MapboxMap {
         for (var i = 0; i < map.pois.length; i++) {
             if ( Math.abs(coordinate.longitude - map.pois[i].coordinate.longitude) < nearby_lon &&
                     Math.abs(coordinate.latitude - map.pois[i].coordinate.latitude) < nearby_lat ) {
-                console.log("POI pressed: " + map.pois[i]);
+                if (!map.pois[i].bubble) {
+                    console.log("POI pressed: " + map.pois[i]);
+                }
                 return;
             }
         }
@@ -454,7 +456,8 @@ MapboxMap {
         map.addSourcePoints(constants.sourcePois, [QtPositioning.coordinate(59.436962, 24.753574)]);
         map.addImagePath(constants.imagePoi, Qt.resolvedUrl(app.getIcon("icons/poi")))
 
-        map.addLayer(constants.layerPois, {"type": "symbol", "source": constants.sourcePois}, map.styleReferenceLayer);
+        // since we have text labels, put the symbols on top
+        map.addLayer(constants.layerPois, {"type": "symbol", "source": constants.sourcePois}); //, map.styleReferenceLayer);
         map.setLayoutProperty(constants.layerPois, "icon-image", constants.imagePoi);
         map.setLayoutProperty(constants.layerPois, "icon-size", 1.0 / map.pixelRatio);
         map.setLayoutProperty(constants.layerPois, "icon-allow-overlap", true);

@@ -127,7 +127,7 @@ ApplicationWindow {
     function hideMenu() {
         console.log("hideMenu TODO")
         // Immediately hide the menu, keeping pages intact.
-//        root.visible = true;
+        //root.visible = true;
     }
 
     function reroute() {
@@ -203,13 +203,13 @@ ApplicationWindow {
         if (page) {
 //            dummy.updateTiles();
 //            app.pageStack.pop(dummy, PageStackAction.Immediate);
-//            app.pageStack.push(page, params || {});
+            app.pageStack.push(page, params || {});
         } else if (app.pageStack.currentPage &&
                    app.pageStack.currentPage.partOfNavigationStack) {
             // Clear NavigationPage and NarrativePage from the stack.
 //            dummy.updateTiles();
 //            app.pageStack.pop(dummy, PageStackAction.Immediate);
-//            app.pageStack.push("MenuPage.qml");
+            app.pageStack.push("MenuPage.qml");
         } else if (app.pageStack.depth < 2) {
 //            dummy.updateTiles();
             app.pageStack.push("MenuPage.qml");

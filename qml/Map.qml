@@ -119,6 +119,10 @@ MapboxMap {
         }
     }
 
+    Behavior on pitch {
+        NumberAnimation { duration: 1000 }
+    }
+
     MapMouseArea {}
     NarrationTimer {}
     PositionMarker { id: positionMarker }
@@ -330,12 +334,13 @@ MapboxMap {
         // Set UI to navigation mode.
         map.zoomLevel < 16 && map.setZoomLevel(16);
         map.centerOnPosition();
-        // Wait for the centering animation to complete before turning
-        // on auto-rotate to avoid getting the trigonometry wrong.
-        py.call("poor.util.sleep", [0.5], function() {
-            map.autoCenter = true;
-            map.autoRotate = true;
-        });
+        map.setMargins(0, 0.5, 0, 0.25);
+//        // Wait for the centering animation to complete before turning
+//        // on auto-rotate to avoid getting the trigonometry wrong.
+//        py.call("poor.util.sleep", [0.5], function() {
+//            map.autoCenter = true;
+//            map.autoRotate = true;
+//        });
         py.call("poor.app.narrative.begin", null, null);
         app.navigationActive = true;
         app.navigationPageSeen = true;
@@ -383,6 +388,7 @@ MapboxMap {
         map.autoCenter = false;
         map.autoRotate = false;
         map.zoomLevel > 15 && map.setZoomLevel(15);
+        map.setMargins(0, 0, 0, 0);
         py.call("poor.app.narrative.end", null, null);
         app.navigationActive = false;
     }

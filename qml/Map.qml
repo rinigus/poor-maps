@@ -47,7 +47,7 @@ MapboxMap {
 
     // TODO
     cacheDatabaseMaximalSize: 20*1024*1024
-    cacheDatabasePath: "/tmp/mbgl-cache.db"    
+    cacheDatabasePath: "/tmp/mbgl-cache.db"
     
     property bool autoCenter: false
     property bool autoRotate: false
@@ -61,7 +61,7 @@ MapboxMap {
     property var  pois: []
     property var  position: gps.position
     property bool ready: false
-    property var  route: route
+    property var  route: {}
     property real scaleX: 0
     property real scaleY: 0
 
@@ -93,10 +93,15 @@ MapboxMap {
 
         // Mapbox sources, layers, and images
         property string sourcePois: "pm-source-pois"
-
         property string imagePoi: "pm-image-poi"
-
         property string layerPois: "pm-layer-pois"
+
+        property string sourceManeuvers: "pm-source-maneuvers"
+        property string layerManeuvers: "pm-layer-maneuvers"
+
+        property string sourceRoute: "pm-source-route"
+        property string layerRouteCase: "pm-layer-route-case"
+        property string layerRoute: "pm-layer-route"
     }
 
     Behavior on center {
@@ -117,7 +122,7 @@ MapboxMap {
     MapMouseArea {}
     NarrationTimer {}
     PositionMarker { id: positionMarker }
-    Route { id: route }
+    //Route { id: route }
 
     Component.onCompleted: {
         map.initLayers();
@@ -154,37 +159,37 @@ MapboxMap {
             map.centerOnPosition();
         } else if (map.autoCenter) {
             map.centerOnPosition();
-//            // Center map on position if outside center of screen.
-//            // map.toScreenPosition returns NaN when outside component and
-//            // otherwise actually relative positions inside the map component,
-//            // which can differ from the screen when using auto-rotation.
-//            var pos = map.toScreenPosition(map.position.coordinate);
-//            if (!pos.x || !pos.y)
-//                return map.centerOnPosition();
-//            var height = app.screenHeight - app.navigationBlock.height;
-//            // If the navigation block covers the top part of the screen,
-//            // center the position to the part of the map remaining visible.
-//            var dy = app.navigationBlock.height / 2;
-//            if (map.autoRotate) {
-//                // If auto-rotate is on, the user is always heading up
-//                // on the screen and should see more ahead than behind.
-//                dy += (0.5 - map.constants.navigationCenterY) * height;
-//                // Avoid overlap with the menu button. Note that the position marker
-//                // height includes the arrow, which points up when navigating,
-//                // leaving padding the size of the arrow at the bottom.
-//                dy = Math.min(dy, (app.screenHeight/2 -
-//                                   app.menuButton.height -
-//                                   app.menuButton.anchors.bottomMargin -
-//                                   map.positionMarker.height/2));
+            //            // Center map on position if outside center of screen.
+            //            // map.toScreenPosition returns NaN when outside component and
+            //            // otherwise actually relative positions inside the map component,
+            //            // which can differ from the screen when using auto-rotation.
+            //            var pos = map.toScreenPosition(map.position.coordinate);
+            //            if (!pos.x || !pos.y)
+            //                return map.centerOnPosition();
+            //            var height = app.screenHeight - app.navigationBlock.height;
+            //            // If the navigation block covers the top part of the screen,
+            //            // center the position to the part of the map remaining visible.
+            //            var dy = app.navigationBlock.height / 2;
+            //            if (map.autoRotate) {
+            //                // If auto-rotate is on, the user is always heading up
+            //                // on the screen and should see more ahead than behind.
+            //                dy += (0.5 - map.constants.navigationCenterY) * height;
+            //                // Avoid overlap with the menu button. Note that the position marker
+            //                // height includes the arrow, which points up when navigating,
+            //                // leaving padding the size of the arrow at the bottom.
+            //                dy = Math.min(dy, (app.screenHeight/2 -
+            //                                   app.menuButton.height -
+            //                                   app.menuButton.anchors.bottomMargin -
+            //                                   map.positionMarker.height/2));
 
-//            }
-//            // https://en.wikipedia.org/wiki/Azimuth#Cartographical_azimuth
-//            var cx = map.width  / 2 + dy * Math.sin(Util.deg2rad(map.rotation));
-//            var cy = map.height / 2 + dy * Math.cos(Util.deg2rad(map.rotation));
-//            var threshold = map.autoRotate ? 0.12 * height :
-//                0.18 * Math.min(app.screenWidth, height);
-//            if (Util.eucd(pos.x, pos.y, cx, cy) > threshold)
-//                map.centerOnPosition();
+            //            }
+            //            // https://en.wikipedia.org/wiki/Azimuth#Cartographical_azimuth
+            //            var cx = map.width  / 2 + dy * Math.sin(Util.deg2rad(map.rotation));
+            //            var cy = map.height / 2 + dy * Math.cos(Util.deg2rad(map.rotation));
+            //            var threshold = map.autoRotate ? 0.12 * height :
+            //                0.18 * Math.min(app.screenWidth, height);
+            //            if (Util.eucd(pos.x, pos.y, cx, cy) > threshold)
+            //                map.centerOnPosition();
         }
     }
 
@@ -242,19 +247,21 @@ MapboxMap {
          *    (optional, defaults to false)
          *  - duration: Duration (s) of leg following maneuver point
          */
-        var component, maneuver;
         for (var i = 0; i < maneuvers.length; i++) {
-            component = Qt.createComponent("ManeuverMarker.qml");
-            maneuver = component.createObject(map);
-            maneuver.coordinate = QtPositioning.coordinate(maneuvers[i].y, maneuvers[i].x);
-            maneuver.icon = maneuvers[i].icon || "flag";
-            maneuver.narrative = maneuvers[i].narrative || "";
-            maneuver.passive = maneuvers[i].passive || false;
-            maneuver.duration = maneuvers[i].duration || 0;
+            var maneuver = {
+                "coordinate": QtPositioning.coordinate(maneuvers[i].y, maneuvers[i].x),
+                "icon": maneuvers[i].icon || "flag",
+                "narrative": maneuvers[i].narrative || "",
+                "passive": maneuvers[i].passive || false,
+                "duration": maneuvers[i].duration || 0,
+                "verbal_alert": maneuvers[i].verbal_alert,
+                "verbal_pre": maneuvers[i].verbal_pre,
+                "verbal_post": maneuvers[i].verbal_post
+            };
             map.maneuvers.push(maneuver);
-            map.addMapItem(maneuver);
         }
         py.call("poor.app.narrative.set_maneuvers", [maneuvers], null);
+        map.updateMapManeuvers();
         map.saveManeuvers();
     }
 
@@ -269,7 +276,7 @@ MapboxMap {
          *  - text: Text.RichText to show in POI bubble
          *  - link: Hyperlink accessible from POI bubble (optional)
          */
-        var component, poi;
+        var poi;
         for (var i = 0; i < pois.length; i++) {
             poi = {
                 "coordinate": QtPositioning.coordinate(pois[i].y, pois[i].x),
@@ -299,11 +306,11 @@ MapboxMap {
          */
         amend || map.endNavigating();
         map.clearRoute();
-        map.route.setPath(route.x, route.y);
+        map.route.x = route.x;
+        map.route.y = route.y;
         map.route.attribution = route.attribution || "";
         map.route.mode = route.mode || "car";
         map.route.language = route.language;
-        map.route.redraw();
         py.call_sync("poor.app.narrative.set_mode", [route.mode || "car"]);
         if (app.conf.get("voice_commands")) {
             py.call_sync("poor.app.narrative.set_voice", [route.language, app.conf.get("voice_gender")], null);
@@ -313,6 +320,7 @@ MapboxMap {
         py.call("poor.app.narrative.set_route", [route.x, route.y], function() {
             map.hasRoute = true;
         });
+        map.updateMapRoute();
         map.saveRoute();
         map.saveManeuvers();
         app.navigationStarted = !!amend;
@@ -359,14 +367,15 @@ MapboxMap {
 
     function clearRoute() {
         // Remove all route markers from the map.
-        Util.removeMapItems(map, map.maneuvers);
         map.maneuvers = [];
-        map.route.clear();
+        map.route = {};
         py.call_sync("poor.app.narrative.unset", []);
         app.navigationStatus.clear();
         map.saveRoute();
         map.saveManeuvers();
         map.hasRoute = false;
+        map.updateMapManeuvers();
+        map.updateMapRoute();
     }
 
     function endNavigating() {
@@ -395,24 +404,24 @@ MapboxMap {
     function fitViewToRoute() {
         // Set center and zoom so that the whole route is visible.
         // For performance reasons, include only a subset of points.
-        if (map.route.path.x.length === 0) return;
+        if (map.route.x.length === 0) return;
         var coords = [];
-        for (var i = 0; i < map.route.path.x.length; i = i + 10) {
+        for (var i = 0; i < map.route.x.length; i = i + 10) {
             coords.push(QtPositioning.coordinate(
-                map.route.path.y[i], map.route.path.x[i]));
+                            map.route.y[i], map.route.x[i]));
         }
-        var x = map.route.path.x[map.route.path.x.length-1];
-        var y = map.route.path.y[map.route.path.x.length-1];
+        var x = map.route.x[map.route.x.length-1];
+        var y = map.route.y[map.route.x.length-1];
         coords.push(QtPositioning.coordinate(y, x));
         map.fitViewtoCoordinates(coords);
     }
 
-//    function getBoundingBox() {
-//        // Return currently visible [xmin, xmax, ymin, ymax].
-//        var nw = map.toCoordinate(Qt.point(0, 0));
-//        var se = map.toCoordinate(Qt.point(map.width, map.height));
-//        return [nw.longitude, se.longitude, se.latitude, nw.latitude];
-//    }
+    //    function getBoundingBox() {
+    //        // Return currently visible [xmin, xmax, ymin, ymax].
+    //        var nw = map.toCoordinate(Qt.point(0, 0));
+    //        var se = map.toCoordinate(Qt.point(map.width, map.height));
+    //        return [nw.longitude, se.longitude, se.latitude, nw.latitude];
+    //    }
 
     function getPosition() {
         // Return the current position as [x,y].
@@ -433,6 +442,8 @@ MapboxMap {
     }
 
     function initLayers() {
+        //////////////////////////////////////////////
+        // POIs
         map.addSourcePoints(constants.sourcePois, []);
         map.addImagePath(constants.imagePoi, Qt.resolvedUrl(app.getIcon("icons/poi")))
 
@@ -449,6 +460,35 @@ MapboxMap {
         map.setLayoutPropertyList(constants.layerPois, "text-offset", [0.0, 1.0]);
         map.setPaintProperty(constants.layerPois, "text-halo-color", "white");
         map.setPaintProperty(constants.layerPois, "text-halo-width", 2);
+
+        //////////////////////////////////////////////
+        // Route
+        map.addSourceLine(constants.sourceRoute, []);
+
+        map.addLayer(constants.layerRouteCase,
+                     {"type": "line", "source": constants.sourceRoute}, map.styleReferenceLayer);
+        map.setLayoutProperty(constants.layerRouteCase, "line-join", "round");
+        map.setLayoutProperty(constants.layerRouteCase, "line-cap", "round");
+        map.setPaintProperty(constants.layerRouteCase, "line-color", "#819FFF");
+        map.setPaintProperty(constants.layerRouteCase, "line-width", 8);
+
+        map.addLayer(constants.layerRoute,
+                     {"type": "line", "source": constants.sourceRoute}, map.styleReferenceLayer);
+        map.setLayoutProperty(constants.layerRoute, "line-join", "round");
+        map.setLayoutProperty(constants.layerRoute, "line-cap", "round");
+        map.setPaintProperty(constants.layerRoute, "line-color", "white");
+        map.setPaintProperty(constants.layerRoute, "line-width", 1);
+
+        //////////////////////////////////////////////
+        // Maneuvers - drawn on top of the route
+        map.addSourcePoints(constants.sourceManeuvers, []);
+
+        map.addLayer(constants.layerManeuvers,
+                     {"type": "circle", "source": constants.sourceManeuvers}, map.styleReferenceLayer);
+        map.setPaintProperty(constants.layerManeuvers, "circle-radius", 3);
+        map.setPaintProperty(constants.layerManeuvers, "circle-color", "white");
+        map.setPaintProperty(constants.layerManeuvers, "circle-stroke-width", 2);
+        map.setPaintProperty(constants.layerManeuvers, "circle-stroke-color", "#819FFF");
     }
 
     function initProperties() {
@@ -482,8 +522,28 @@ MapboxMap {
             p.push(map.pois[i].coordinate);
             n.push(map.pois[i].title);
         }
-
         map.updateSourcePoints(constants.sourcePois, p, n);
+    }
+
+    function updateMapManeuvers() {
+        // update maneuvers drawn on the map
+        var p = [];
+        for (var i = 0; i < map.maneuvers.length; i++) {
+            p.push(map.maneuvers[i].coordinate);
+        }
+        map.updateSourcePoints(constants.sourceManeuvers, p);
+    }
+
+    function updateMapRoute() {
+        // update route drawn on the map
+        var p = [];
+        if (map.route.x)  {
+            for (var i = 0; i < map.route.x.length; i++) {
+                p.push(QtPositioning.coordinate(
+                           map.route.y[i], map.route.x[i]));
+            }
+        }
+        map.updateSourceLine(constants.sourceRoute, p);
     }
 
     function loadManeuvers() {
@@ -509,7 +569,7 @@ MapboxMap {
         if (!py.ready) return;
         py.call("poor.storage.read_route", [], function(data) {
             if (data.x && data.x.length > 0 &&
-                data.y && data.y.length > 0)
+                    data.y && data.y.length > 0)
                 map.addRoute(data);
         });
     }
@@ -583,11 +643,11 @@ MapboxMap {
     function saveRoute() {
         // Save route to JSON file.
         if (!py.ready) return;
-        if (map.route.path.x && map.route.path.x.length > 0 &&
-            map.route.path.y && map.route.path.y.length > 0) {
+        if (map.route.x && map.route.x.length > 0 &&
+                map.route.y && map.route.y.length > 0) {
             var data = {};
-            data.x = map.route.path.x;
-            data.y = map.route.path.y;
+            data.x = map.route.x;
+            data.y = map.route.y;
             data.attribution = map.route.attribution;
             data.mode = map.route.mode;
             data.language = map.route.language
@@ -622,18 +682,18 @@ MapboxMap {
     /*     map.changed = true; */
     /* } */
 
-//    function updateSize() {
-//        // Update map width and height to match environment.
-//        if (map.autoRotate) {
-//            var dim = Math.floor(Math.sqrt(
-//                parent.width * parent.width +
-//                    parent.height * parent.height));
-//            map.width = dim;
-//            map.height = dim;
-//        } else {
-//            map.width = parent.width;
-//            map.height = parent.height;
-//        }
-//        map.hasRoute && map.route.redraw();
-//    }
+    //    function updateSize() {
+    //        // Update map width and height to match environment.
+    //        if (map.autoRotate) {
+    //            var dim = Math.floor(Math.sqrt(
+    //                parent.width * parent.width +
+    //                    parent.height * parent.height));
+    //            map.width = dim;
+    //            map.height = dim;
+    //        } else {
+    //            map.width = parent.width;
+    //            map.height = parent.height;
+    //        }
+    //        map.hasRoute && map.route.redraw();
+    //    }
 }

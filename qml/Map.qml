@@ -226,13 +226,7 @@ MapboxMap {
         }
 
         // Unknown click - let's close all POI dialogs
-        for (var i = 0; i < map.pois.length; i++) {
-            if (map.pois[i].bubble) {
-                map.removeLocationTracking(map.pois[i].bubble.trackerId);
-                map.pois[i].bubble.destroy();
-                map.pois[i].bubble = false;
-            }
-        }
+        map.hidePoiBubbles();
     }
 
     function addManeuvers(maneuvers) {
@@ -357,6 +351,7 @@ MapboxMap {
 
     function clearPois() {
         // Remove all point of interest from the map.
+        hidePoiBubbles();
         map.pois = [];
         map.updateMapPois();
         map.savePois();
@@ -428,8 +423,13 @@ MapboxMap {
 
     function hidePoiBubbles() {
         // Hide label bubbles of all POI markers.
-        for (var i = 0; i < map.pois.length; i++)
-            map.pois[i].bubbleVisible = false;
+        for (var i = 0; i < map.pois.length; i++) {
+            if (map.pois[i].bubble) {
+                map.removeLocationTracking(map.pois[i].bubble.trackerId);
+                map.pois[i].bubble.destroy();
+                map.pois[i].bubble = false;
+            }
+        }
     }
 
     function initLayers() {

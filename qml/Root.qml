@@ -26,25 +26,75 @@ import "."
  * handle orientation changes ourselves with two wrapper containers.
  */
 
-Page {
+Item {
+    anchors.fill: parent
+    height: Screen.height
+    width: Screen.width
+    z: 100
 
-    allowedOrientations: app.defaultAllowedOrientations
-    //z: 100
+    Item {
+        id: revolver
+        anchors.centerIn: parent
+        height: app.screenHeight
+        width: app.screenWidth
 
-    Map { id: map }
-    MenuButton { id: menuButton }
-    Meters { id: meters }
-    NavigationBlock { id: navigationBlock }
-    NorthArrow { id: northArrow }
-    Notification { id: notification }
-    ScaleBar { id: scaleBar }
+        Behavior on rotation {
+            RotationAnimation {
+                direction: RotationAnimation.Shortest
+                duration: 250
+                easing.type: Easing.Linear
+            }
+        }
 
-    Component.onCompleted: {
-        app.map = map;
-        app.menuButton = menuButton;
-        app.navigationBlock = navigationBlock;
-        app.northArrow = northArrow;
-        app.notification = notification;
-        app.scaleBar = scaleBar;
+        Map { id: map }
+        MenuButton { id: menuButton }
+        Meters { id: meters }
+        NavigationBlock { id: navigationBlock }
+        NorthArrow { id: northArrow }
+        Notification { id: notification }
+        ScaleBar { id: scaleBar }
+
+        Component.onCompleted: {
+            revolver.updateOrientation();
+            app.onDeviceOrientationChanged.connect(revolver.updateOrientation);
+            app.map = map;
+            app.menuButton = menuButton;
+            app.navigationBlock = navigationBlock;
+            app.northArrow = northArrow;
+            app.notification = notification;
+            app.scaleBar = scaleBar;
+        }
+
+        function updateOrientation() {
+            if (!(app.deviceOrientation & app.allowedOrientations)) return;
+            switch (app.deviceOrientation) {
+            case Orientation.Portrait:
+                app.screenWidth = Screen.width;
+                app.screenHeight = Screen.height;
+                revolver.rotation = 0;
+                //map.updateSize();
+                break;
+            case Orientation.PortraitInverted:
+                app.screenWidth = Screen.width;
+                app.screenHeight = Screen.height;
+                revolver.rotation = 180;
+                //map.updateSize();
+                break;
+            case Orientation.Landscape:
+                app.screenWidth = Screen.height;
+                app.screenHeight = Screen.width;
+                revolver.rotation = 90;
+                //map.updateSize();
+                break;
+            case Orientation.LandscapeInverted:
+                app.screenWidth = Screen.height;
+                app.screenHeight = Screen.width;
+                revolver.rotation = 270;
+                //map.updateSize();
+                break;
+            }
+        }
+
     }
+
 }

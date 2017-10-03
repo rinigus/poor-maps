@@ -35,7 +35,7 @@ ApplicationWindow {
     id: app
     allowedOrientations: defaultAllowedOrientations
     cover: Cover {}
-    initialPage: Root { id: root } //DummyPage { id: dummy }
+    initialPage: DummyPage { id: dummy }
 
     property var  conf: Config {}
     property bool inMenu: !root.visible
@@ -65,7 +65,7 @@ ApplicationWindow {
     // and the associated constant Theme.itemSizeSmall.
     property real listItemVerticalMargin: (Theme.itemSizeSmall - 1.125 * Theme.fontSizeMedium) / 2
 
-    //Root { id: root }
+    Root { id: root }
     PositionSource { id: gps }
     Python { id: py }
 
@@ -104,10 +104,9 @@ ApplicationWindow {
     }
 
     function clearMenu() {
-        app.pageStack.pop();
-//        // Clear the page stack and hide the menu.
-//        app.pageStack.pop(dummy, PageStackAction.Immediate);
-//        app.hideMenu();
+        // Clear the page stack and hide the menu.
+        app.pageStack.pop(dummy, PageStackAction.Immediate);
+        app.hideMenu();
     }
 
     function getIcon(name) {
@@ -125,9 +124,8 @@ ApplicationWindow {
     }
 
     function hideMenu() {
-        console.log("hideMenu TODO")
         // Immediately hide the menu, keeping pages intact.
-        //root.visible = true;
+        root.visible = true;
     }
 
     function reroute() {
@@ -183,38 +181,38 @@ ApplicationWindow {
     }
 
     function showNavigationPages() {
-//        // Show NavigationPage and NarrativePage.
-//        if (!app.pageStack.currentPage ||
-//            !app.pageStack.currentPage.partOfNavigationStack) {
-//            dummy.updateTiles();
-//            app.pageStack.pop(dummy, PageStackAction.Immediate);
-//            app.pageStack.push("NavigationPage.qml");
-//            app.pageStack.pushAttached("NarrativePage.qml");
-//        }
-//        // If the narrative page is already active, we don't get the page status
-//        // change signal and must request repopulation to scroll the list.
-//        var narrativePage = app.pageStack.nextPage(app.pageStack.nextPage(dummy));
-//        app.pageStack.currentPage === narrativePage && narrativePage.populate();
-////        root.visible = false;
+        // Show NavigationPage and NarrativePage.
+        if (!app.pageStack.currentPage ||
+            !app.pageStack.currentPage.partOfNavigationStack) {
+            dummy.updateTiles();
+            app.pageStack.pop(dummy, PageStackAction.Immediate);
+            app.pageStack.push("NavigationPage.qml");
+            app.pageStack.pushAttached("NarrativePage.qml");
+        }
+        // If the narrative page is already active, we don't get the page status
+        // change signal and must request repopulation to scroll the list.
+        var narrativePage = app.pageStack.nextPage(app.pageStack.nextPage(dummy));
+        app.pageStack.currentPage === narrativePage && narrativePage.populate();
+        root.visible = false;
     }
 
     function showMenu(page, params) {
         // Show a menu page, either given, last viewed, or the main menu.
         if (page) {
-//            dummy.updateTiles();
-//            app.pageStack.pop(dummy, PageStackAction.Immediate);
+            dummy.updateTiles();
+            app.pageStack.pop(dummy, PageStackAction.Immediate);
             app.pageStack.push(page, params || {});
         } else if (app.pageStack.currentPage &&
                    app.pageStack.currentPage.partOfNavigationStack) {
             // Clear NavigationPage and NarrativePage from the stack.
-//            dummy.updateTiles();
-//            app.pageStack.pop(dummy, PageStackAction.Immediate);
+            dummy.updateTiles();
+            app.pageStack.pop(dummy, PageStackAction.Immediate);
             app.pageStack.push("MenuPage.qml");
         } else if (app.pageStack.depth < 2) {
-//            dummy.updateTiles();
+            dummy.updateTiles();
             app.pageStack.push("MenuPage.qml");
         }
-////        root.visible = false;
+        root.visible = false;
     }
 
     function tr(message) {
@@ -245,4 +243,5 @@ ApplicationWindow {
             sound.source = "file://" + status.voice_to_play
         }        
     }
+
 }

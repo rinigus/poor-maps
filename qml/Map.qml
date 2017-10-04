@@ -131,6 +131,7 @@ MapboxMap {
     Component.onCompleted: {
         map.initLayers();
         map.initProperties();
+        map.updateMargins();
     }
 
     onAutoRotateChanged: {
@@ -139,6 +140,7 @@ MapboxMap {
         } else {
             map.bearing = 0;
         }
+        updateMargins();
     }
 
     onDirectionChanged: {
@@ -154,6 +156,8 @@ MapboxMap {
         // Update keep-alive in case set to 'navigating'.
         app.updateKeepAlive();
     }
+
+    onHeightChanged: map.updateMargins()
 
     onPositionChanged: {
         if (!map.centerFound) {
@@ -672,6 +676,56 @@ MapboxMap {
         if (!x || !y) return;
         map.center = QtPositioning.coordinate(y, x);
     }
+
+    function updateMargins() {
+        // Finds new margins and sets them for the map
+
+        // navigation block limits the view from the top
+        var navheight = app.navigationBlock.height;
+
+        // Menu bottom limits view on the bottom.
+        // During rotation, if menu button position changes
+        // before height, it could cause negative menucut
+        var menucut = Math.max(0, height - app.menuButton.y);
+
+        // remaining height of the map view
+        var freeheight = height - navheight - menucut;
+
+        var margins;
+
+        // If auto-rotate is on, the user is always heading up
+        // on the screen and should see more ahead than behind.
+        if (map.autoRotate) {
+            margins = Qt.rect(
+                        0.1,               // x
+                        (menucut + 0.05*freeheight) / height,   // y
+                        0.8,                // width
+                        0.2*freeheight / height // height
+                        );
+
+        } else {
+            margins = Qt.rect(
+                        0.1,               // x
+                        (menucut + 0.05*freeheight) / height,   // y
+                        0.8,                // width
+                        0.9*freeheight / height // height
+                        );
+        }
+
+        map.margins = margins
+    }
+
+    Connections {
+        target: app.navigationBlock
+        onHeightChanged: map.updateMargins()
+    }
+
+    Connections {
+        target: app.menuButton
+        onYChanged: map.updateMargins()
+    }
+
+
 
     /* function setZoomLevel(zoom) { */
     /*     // Set the current zoom level. */

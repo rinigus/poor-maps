@@ -334,7 +334,7 @@ MapboxMap {
         // Set UI to navigation mode.
         map.zoomLevel < 16 && map.setZoomLevel(16);
         map.centerOnPosition();
-        map.setMargins(0, 0.5, 0, 0.25);
+        map.setMargins(0, 0.5, 0, 0.0);
         map.autoCenter = true;
         map.autoRotate = true;
         py.call("poor.app.narrative.begin", null, null);

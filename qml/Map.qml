@@ -335,12 +335,8 @@ MapboxMap {
         map.zoomLevel < 16 && map.setZoomLevel(16);
         map.centerOnPosition();
         map.setMargins(0, 0.5, 0, 0.25);
-//        // Wait for the centering animation to complete before turning
-//        // on auto-rotate to avoid getting the trigonometry wrong.
-//        py.call("poor.util.sleep", [0.5], function() {
-//            map.autoCenter = true;
-//            map.autoRotate = true;
-//        });
+        map.autoCenter = true;
+        map.autoRotate = true;
         py.call("poor.app.narrative.begin", null, null);
         app.navigationActive = true;
         app.navigationPageSeen = true;
@@ -348,6 +344,13 @@ MapboxMap {
         app.rerouteConsecutiveErrors = 0;
         app.reroutePreviousTime = -1;
         app.rerouteTotalCalls = 0;
+    }
+
+    function getRouteDestination() {
+        // Return coordinates [x,y] of the route destination.
+        return [map.route.x[mar.route.x.length - 1],
+                map.route.y[map.route.y.length - 1]];
+
     }
 
     function centerOnPosition() {

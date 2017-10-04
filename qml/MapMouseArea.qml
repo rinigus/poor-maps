@@ -138,18 +138,3 @@ PinchArea {
         }
     }
 }
-
-/* MouseArea { */
-/*     anchors.fill: parent */
-/*     onClicked: map.hidePoiBubbles(); */
-/*     onDoubleClicked: map.centerOnPosition(); */
-/*     onPressAndHold: { */
-/*         var coord = map.toCoordinate(Qt.point(mouse.x, mouse.y)); */
-/*         map.addPois([{ */
-/*             "x": coord.longitude, */
-/*             "y": coord.latitude, */
-/*             "title": app.tr("Unnamed point"), */
-/*             "text": app.tr("Unnamed point") */
-/*         }]); */
-/*     } */
-/* } */

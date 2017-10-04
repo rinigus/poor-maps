@@ -72,25 +72,21 @@ Item {
                 app.screenWidth = Screen.width;
                 app.screenHeight = Screen.height;
                 revolver.rotation = 0;
-                //map.updateSize();
                 break;
             case Orientation.PortraitInverted:
                 app.screenWidth = Screen.width;
                 app.screenHeight = Screen.height;
                 revolver.rotation = 180;
-                //map.updateSize();
                 break;
             case Orientation.Landscape:
                 app.screenWidth = Screen.height;
                 app.screenHeight = Screen.width;
                 revolver.rotation = 90;
-                //map.updateSize();
                 break;
             case Orientation.LandscapeInverted:
                 app.screenWidth = Screen.height;
                 app.screenHeight = Screen.width;
                 revolver.rotation = 270;
-                //map.updateSize();
                 break;
             }
         }

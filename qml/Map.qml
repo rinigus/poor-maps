@@ -126,7 +126,6 @@ MapboxMap {
     MapMouseArea {}
     NarrationTimer {}
     PositionMarker { id: positionMarker }
-    //Route { id: route }
 
     Component.onCompleted: {
         map.initLayers();
@@ -167,37 +166,6 @@ MapboxMap {
             map.centerOnPosition();
         } else if (map.autoCenter) {
             map.centerOnPosition();
-            //            // Center map on position if outside center of screen.
-            //            // map.toScreenPosition returns NaN when outside component and
-            //            // otherwise actually relative positions inside the map component,
-            //            // which can differ from the screen when using auto-rotation.
-            //            var pos = map.toScreenPosition(map.position.coordinate);
-            //            if (!pos.x || !pos.y)
-            //                return map.centerOnPosition();
-            //            var height = app.screenHeight - app.navigationBlock.height;
-            //            // If the navigation block covers the top part of the screen,
-            //            // center the position to the part of the map remaining visible.
-            //            var dy = app.navigationBlock.height / 2;
-            //            if (map.autoRotate) {
-            //                // If auto-rotate is on, the user is always heading up
-            //                // on the screen and should see more ahead than behind.
-            //                dy += (0.5 - map.constants.navigationCenterY) * height;
-            //                // Avoid overlap with the menu button. Note that the position marker
-            //                // height includes the arrow, which points up when navigating,
-            //                // leaving padding the size of the arrow at the bottom.
-            //                dy = Math.min(dy, (app.screenHeight/2 -
-            //                                   app.menuButton.height -
-            //                                   app.menuButton.anchors.bottomMargin -
-            //                                   map.positionMarker.height/2));
-
-            //            }
-            //            // https://en.wikipedia.org/wiki/Azimuth#Cartographical_azimuth
-            //            var cx = map.width  / 2 + dy * Math.sin(Util.deg2rad(map.rotation));
-            //            var cy = map.height / 2 + dy * Math.cos(Util.deg2rad(map.rotation));
-            //            var threshold = map.autoRotate ? 0.12 * height :
-            //                0.18 * Math.min(app.screenWidth, height);
-            //            if (Util.eucd(pos.x, pos.y, cx, cy) > threshold)
-            //                map.centerOnPosition();
         }
     }
 
@@ -262,9 +230,9 @@ MapboxMap {
                 "narrative": maneuvers[i].narrative || "",
                 "passive": maneuvers[i].passive || false,
                 "duration": maneuvers[i].duration || 0,
-                "verbal_alert": maneuvers[i].verbal_alert,
-                "verbal_pre": maneuvers[i].verbal_pre,
-                "verbal_post": maneuvers[i].verbal_post
+                "verbal_alert": maneuvers[i].verbal_alert || "",
+                "verbal_pre": maneuvers[i].verbal_pre || "",
+                "verbal_post": maneuvers[i].verbal_post || ""
             };
             map.maneuvers.push(maneuver);
         }
@@ -338,7 +306,6 @@ MapboxMap {
         // Set UI to navigation mode.
         map.zoomLevel < 16 && map.setZoomLevel(16);
         map.centerOnPosition();
-        map.setMargins(0, 0.5, 0, 0.0);
         map.autoCenter = true;
         map.autoRotate = true;
         py.call("poor.app.narrative.begin", null, null);
@@ -395,7 +362,6 @@ MapboxMap {
         map.autoCenter = false;
         map.autoRotate = false;
         map.zoomLevel > 15 && map.setZoomLevel(15);
-        map.setMargins(0, 0, 0, 0);
         py.call("poor.app.narrative.end", null, null);
         app.navigationActive = false;
     }
@@ -428,13 +394,6 @@ MapboxMap {
         coords.push(QtPositioning.coordinate(y, x));
         map.fitViewtoCoordinates(coords);
     }
-
-    //    function getBoundingBox() {
-    //        // Return currently visible [xmin, xmax, ymin, ymax].
-    //        var nw = map.toCoordinate(Qt.point(0, 0));
-    //        var se = map.toCoordinate(Qt.point(map.width, map.height));
-    //        return [nw.longitude, se.longitude, se.latitude, nw.latitude];
-    //    }
 
     function getPosition() {
         // Return the current position as [x,y].
@@ -587,36 +546,6 @@ MapboxMap {
         });
     }
 
-    /* function renderTile(props) { */
-    /*     // Render tile from local image file. */
-    /*     if (props.half_zoom !== map.halfZoom) { */
-    /*         map.halfZoom = props.half_zoom; */
-    /*         map.setZoomLevel(map.zoomLevel); */
-    /*     } */
-    /*     for (var i = 0; i < map.tiles.length; i++) { */
-    /*         if (map.tiles[i].uid !== props.uid) continue; */
-    /*         map.tiles[i].coordinate.latitude = props.nwy; */
-    /*         map.tiles[i].coordinate.longitude = props.nwx; */
-    /*         map.tiles[i].smooth = props.smooth; */
-    /*         map.tiles[i].type = props.type; */
-    /*         map.tiles[i].zOffset = props.z; */
-    /*         map.tiles[i].zoomLevel = props.display_zoom + */
-    /*             (props.half_zoom ? constants.halfZoom : 0); */
-    /*         map.tiles[i].uri = props.uri; */
-    /*         map.tiles[i].setWidth(props); */
-    /*         map.tiles[i].setHeight(props); */
-    /*         map.tiles[i].setZ(map.zoomLevel); */
-    /*         return; */
-    /*     } */
-    /*     // Add missing tile to collection. */
-    /*     var component = Qt.createComponent("Tile.qml"); */
-    /*     var tile = component.createObject(map); */
-    /*     tile.uid = props.uid; */
-    /*     map.tiles.push(tile); */
-    /*     map.addMapItem(tile); */
-    /*     map.renderTile(props); */
-    /* } */
-
     function saveManeuvers() {
         // Save maneuvers to JSON file.
         if (!py.ready) return;
@@ -681,12 +610,12 @@ MapboxMap {
         // Finds new margins and sets them for the map
 
         // navigation block limits the view from the top
-        var navheight = app.navigationBlock.height;
+        var navheight = app.navigationBlock ? app.navigationBlock.height : 0;
 
         // Menu bottom limits view on the bottom.
         // During rotation, if menu button position changes
         // before height, it could cause negative menucut
-        var menucut = Math.max(0, height - app.menuButton.y);
+        var menucut = Math.max(0, height - (app.menuButton ? app.menuButton.y : 0));
 
         // remaining height of the map view
         var freeheight = height - navheight - menucut;
@@ -724,39 +653,4 @@ MapboxMap {
         target: app.menuButton
         onYChanged: map.updateMargins()
     }
-
-
-
-    /* function setZoomLevel(zoom) { */
-    /*     // Set the current zoom level. */
-    /*     // Round zoom level so that tiles are displayed pixel for pixel. */
-    /*      zoom = map.halfZoom ? */
-    /*         Math.ceil(zoom - constants.halfZoom - 0.01) + constants.halfZoom : */
-    /*         Math.floor(zoom + 0.01); */
-    /*     map.demoteTiles(); */
-    /*     map.zoomLevel = zoom; */
-    /*     map.zoomLevelPrev = zoom; */
-    /*     var bbox = map.getBoundingBox(); */
-    /*     map.widthCoords = bbox[1] - bbox[0]; */
-    /*     map.heightCoords = bbox[3] - bbox[2]; */
-    /*     map.scaleX = map.width / map.widthCoords; */
-    /*     map.scaleY = map.height / map.heightCoords; */
-    /*     map.hasRoute && map.route.redraw(); */
-    /*     map.changed = true; */
-    /* } */
-
-    //    function updateSize() {
-    //        // Update map width and height to match environment.
-    //        if (map.autoRotate) {
-    //            var dim = Math.floor(Math.sqrt(
-    //                parent.width * parent.width +
-    //                    parent.height * parent.height));
-    //            map.width = dim;
-    //            map.height = dim;
-    //        } else {
-    //            map.width = parent.width;
-    //            map.height = parent.height;
-    //        }
-    //        map.hasRoute && map.route.redraw();
-    //    }
 }

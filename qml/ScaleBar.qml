@@ -32,10 +32,8 @@ Item {
     visible: scaleWidth > 0
     z: 100
 
-//    property var    coordPrev: QtPositioning.coordinate(0, 0)
     property real   scaleWidth: 0
     property string text: ""
-//    property real   zoomLevelPrev: -1
 
     Rectangle {
         id: base

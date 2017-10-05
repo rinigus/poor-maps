@@ -319,7 +319,7 @@ MapboxMap {
 
     function getRouteDestination() {
         // Return coordinates [x,y] of the route destination.
-        return [map.route.x[mar.route.x.length - 1],
+        return [map.route.x[map.route.x.length - 1],
                 map.route.y[map.route.y.length - 1]];
 
     }

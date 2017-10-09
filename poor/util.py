@@ -26,6 +26,7 @@ import math
 import os
 import poor
 import random
+import re
 import shutil
 import stat
 import subprocess
@@ -161,79 +162,76 @@ def find_closest(xs, ys, x, y, subset=None):
             min_dist = dist
     return min_index
 
-def format_distance(meters, n=2, voice=False):
+def format_distance(meters, n=2, short=True):
     """Format `meters` to `n` significant digits and unit label."""
     if poor.conf.units == "american":
         feet = 3.28084 * meters
-        return format_distance_american(feet, n, voice)
+        return format_distance_american(feet, n, short)
     if poor.conf.units == "british":
         yards = 1.09361 * meters
-        return format_distance_british(yards, n, voice)
-    return format_distance_metric(meters, n, voice)
+        return format_distance_british(yards, n, short)
+    return format_distance_metric(meters, n, short)
 
-def format_distance_american(feet, n=2, voice=False):
+def format_distance_american(feet, n=2, short=True):
     """Format `feet` to `n` significant digits and unit label."""
     if (n > 1 and feet >= 1000) or feet >= 5280:
         distance = feet / 5280
-        if voice: units = _("miles")
-        else: units = "mi"
-        in_feet = False
+        units = "mi"
     else:
         # Let's not use units less than a foot.
         distance = feet
-        if voice: units = _("feet")
-        else: units = "ft"
-        in_feet = True
+        units = "ft"
     ndigits = n - math.ceil(math.log10(abs(max(1, distance)) + 1/1000000))
-    if in_feet:
+    if units == "ft":
         ndigits = min(0, ndigits)
     distance = round(distance, ndigits)
+    if not short:
+        units = re.sub("^mi$", _("miles"), units)
+        units = re.sub("^ft$", _("feet"), units)    
     fstring = "{{:.{:d}f}} {{}}".format(max(0, ndigits))
     return fstring.format(distance, units)
 
-def format_distance_british(yards, n=2, voice=False):
+def format_distance_british(yards, n=2, short=True):
     """Format `yards` to `n` significant digits and unit label."""
     if (n > 1 and yards >= 400) or yards >= 1760:
         distance = yards / 1760
-        if voice: units = _("miles")
-        else: units = "mi"
-        in_yards = False
+        units = "mi"
     else:
         # Let's not use units less than a yard.
         distance = yards
-        if voice: units = _("yards")
-        else: units = "yd"
-        in_yards = True
+        units = "yd"
     ndigits = n - math.ceil(math.log10(abs(max(1, distance)) + 1/1000000))
-    if in_yards:
+    if units == "yd":
         ndigits = min(0, ndigits)
     distance = round(distance, ndigits)
+    if not short:
+        units = re.sub("^mi$", _("miles"), units)
+        units = re.sub("^yd$", _("yards"), units)
     fstring = "{{:.{:d}f}} {{}}".format(max(0, ndigits))
     return fstring.format(distance, units)
 
-def format_distance_metric(meters, n=2, voice=False):
+def format_distance_metric(meters, n=2, short=True):
     """Format `meters` to `n` significant digits and unit label."""
     if meters >= 1000:
         distance = meters / 1000
-        if voice: units = _("kilometers")
-        else: units = "km"
-        in_meters = False
+        units = "km"
     else:
         # Let's not use units less than a meter.
         distance = meters
-        if voice: units = _("meters")
-        else: units = "m"
-        in_meters = True
+        units = "m"
     ndigits = n - math.ceil(math.log10(abs(max(1, distance)) + 1/1000000))
-    if in_meters:
+    if units == "m":
         ndigits = min(0, ndigits)
     distance = round(distance, ndigits)
+    if not short:
+        units = re.sub("^m$", _("meters"), units)
+        units = re.sub("^km$", _("kilometers"), units)
     fstring = "{{:.{:d}f}} {{}}".format(max(0, ndigits))
     return fstring.format(distance, units)
 
-def format_distance_and_bearing(meters, bearing, n=2, voice=False):
+def format_distance_and_bearing(meters, bearing, n=2, short=True):
     """Format `meters` and `bearing` to a human readable string."""
-    distance = format_distance(meters, n, voice)
+    distance = format_distance(meters, n, short)
     f = lambda x: x.format(distance=distance)
     bearing = (bearing + 360) % 360
     bearing = int(round(bearing/45) * 45)
@@ -284,22 +282,6 @@ def format_time(seconds):
     if hours == 0:
         return _("{:d} min").format(minutes)
     return _("{:d} h {:d} min").format(hours, minutes)
-
-def round_distance(distance):
-    """Round distance taking into account used units and return it in meters"""
-    mile = 1609.34
-    yard = 0.9144
-    foot = yard / 3
-    if distance >= mile and (poor.conf.units == "american" or poor.conf.units == "british"):
-        return round(distance / mile, 1) * mile
-    elif poor.conf.units == "american":
-        return round(distance / foot / 100) * foot * 100
-    elif poor.conf.units == "british":
-        return round(distance / yard / 50) * yard * 50
-    # metric case left
-    elif distance > 1000:
-        return round(distance / 1e3, 1) * 1e3
-    return round(distance / 50) * 50
 
 def get_basemaps():
     """Return a list of dictionaries of basemap attributes."""
@@ -446,6 +428,22 @@ def requirement_found(name):
     if os.path.isabs(name):
         return os.path.exists(name)
     return shutil.which(name) is not None
+
+def round_distance(distance):
+    """Round distance taking into account used units and return it in meters"""
+    mile = 1609.34
+    yard = 0.9144
+    foot = yard / 3
+    if distance >= mile and (poor.conf.units == "american" or poor.conf.units == "british"):
+        return round(distance / mile, 1) * mile
+    elif poor.conf.units == "american":
+        return round(distance / foot / 100) * foot * 100
+    elif poor.conf.units == "british":
+        return round(distance / yard / 50) * yard * 50
+    # metric case left
+    elif distance > 1000:
+        return round(distance / 1e3, 1) * 1e3
+    return round(distance / 50) * 50
 
 @contextlib.contextmanager
 def silent(*exceptions, tb=False):

@@ -288,11 +288,6 @@ MapboxMap {
         map.route.mode = route.mode || "car";
         map.route.language = route.language;
         py.call_sync("poor.app.narrative.set_mode", [route.mode || "car"]);
-        if (app.conf.get("voice_commands")) {
-            py.call_sync("poor.app.narrative.set_voice", [route.language, app.conf.get("voice_gender")], null);
-        } else {
-            py.call_sync("poor.app.narrative.set_voice", [null])
-        }
         py.call("poor.app.narrative.set_route", [route.x, route.y], function() {
             map.hasRoute = true;
         });
@@ -308,6 +303,11 @@ MapboxMap {
         map.centerOnPosition();
         map.autoCenter = true;
         map.autoRotate = true;
+        if (app.conf.get("voice_directions")) {
+            py.call_sync("poor.app.narrative.set_voice", [route.language, app.conf.get("voice_gender")], null);
+        } else {
+            py.call_sync("poor.app.narrative.set_voice", [null])
+        }
         py.call("poor.app.narrative.begin", null, null);
         app.navigationActive = true;
         app.navigationPageSeen = true;

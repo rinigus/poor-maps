@@ -123,7 +123,6 @@ MapboxMap {
         NumberAnimation { duration: 1000 }
     }
 
-    MapMouseArea {}
     NarrationTimer {}
     PositionMarker { id: positionMarker }
 
@@ -169,47 +168,64 @@ MapboxMap {
         }
     }
 
-    function mouseClick(coordinate, degLatPerPixel, degLonPerPixel) {
-        // Process mouse clicks by comparing them with the current position,
-        // and POIs
+    MapboxMapGestureArea {
+        map: map
 
-        // 15 pixels at 96dpi would correspond to 4 mm
-        var nearby_lat = map.pixelRatio * 15 * degLatPerPixel;
-        var nearby_lon = map.pixelRatio * 15 * degLonPerPixel;
+        activeClickedGeo: true
+        activePressAndHoldGeo: true
+        
+        onDoubleClicked: map.centerOnPosition()
 
-        // check if its current position
-        if ( Math.abs(coordinate.longitude - map.position.coordinate.longitude) < nearby_lon &&
-                Math.abs(coordinate.latitude - map.position.coordinate.latitude) < nearby_lat ) {
-            positionMarker.mouseClick();
-            return;
-        }
+        onClickedGeo: {
+            // Process mouse clicks by comparing them with the current position,
+            // and POIs
 
-        for (var i = 0; i < map.pois.length; i++) {
-            if ( Math.abs(coordinate.longitude - map.pois[i].coordinate.longitude) < nearby_lon &&
-                    Math.abs(coordinate.latitude - map.pois[i].coordinate.latitude) < nearby_lat ) {
-                if (!map.pois[i].bubble) {
-                    var component = Qt.createComponent("PoiMarker.qml");
-                    var poi = map.pois[i];
-                    var trackid = "POI bubble: " + String(poi.coordinate);
-                    var bubble = component.createObject(map, {
-                                                            "coordinate": poi.coordinate,
-                                                            "trackerId": trackid,
-                                                            "title": poi.title,
-                                                            "text": poi.text,
-                                                            "link": poi.link
-                                                        } );
+            // 15 pixels at 96dpi would correspond to 4 mm
+            var nearby_lat = map.pixelRatio * 15 * degLatPerPixel;
+            var nearby_lon = map.pixelRatio * 15 * degLonPerPixel;
 
-                    map.trackLocation(trackid, poi.coordinate);
-                    map.pois[i].bubble = bubble;
-                }
+            // check if its current position
+            if ( Math.abs(geocoordinate.longitude - map.position.coordinate.longitude) < nearby_lon &&
+                 Math.abs(geocoordinate.latitude - map.position.coordinate.latitude) < nearby_lat ) {
+                positionMarker.mouseClick();
                 return;
             }
+
+            for (var i = 0; i < map.pois.length; i++) {
+                if ( Math.abs(geocoordinate.longitude - map.pois[i].coordinate.longitude) < nearby_lon &&
+                     Math.abs(geocoordinate.latitude - map.pois[i].coordinate.latitude) < nearby_lat ) {
+                    if (!map.pois[i].bubble) {
+                        var component = Qt.createComponent("PoiMarker.qml");
+                        var poi = map.pois[i];
+                        var trackid = "POI bubble: " + String(poi.coordinate);
+                        var bubble = component.createObject(map, {
+                            "coordinate": poi.coordinate,
+                            "trackerId": trackid,
+                            "title": poi.title,
+                            "text": poi.text,
+                            "link": poi.link
+                        } );
+
+                        map.trackLocation(trackid, poi.coordinate);
+                        map.pois[i].bubble = bubble;
+                    }
+                    return;
+                }
+            }
+
+            // Unknown click - let's close all POI dialogs
+            map.hidePoiBubbles();
         }
 
-        // Unknown click - let's close all POI dialogs
-        map.hidePoiBubbles();
+        onPressAndHoldGeo: map.addPois([{
+            "x": geocoordinate.longitude,
+            "y": geocoordinate.latitude,
+            "title": app.tr("Unnamed point"),
+            "text": app.tr("Unnamed point")
+        }])
+        
     }
-
+    
     function addManeuvers(maneuvers) {
         /*
          * Add new maneuver markers to map.
@@ -387,7 +403,7 @@ MapboxMap {
         var coords = [];
         for (var i = 0; i < map.route.x.length; i = i + 10) {
             coords.push(QtPositioning.coordinate(
-                            map.route.y[i], map.route.x[i]));
+                map.route.y[i], map.route.x[i]));
         }
         var x = map.route.x[map.route.x.length-1];
         var y = map.route.y[map.route.x.length-1];
@@ -512,7 +528,7 @@ MapboxMap {
         if (map.route.x)  {
             for (var i = 0; i < map.route.x.length; i++) {
                 p.push(QtPositioning.coordinate(
-                           map.route.y[i], map.route.x[i]));
+                    map.route.y[i], map.route.x[i]));
             }
         }
         map.updateSourceLine(constants.sourceRoute, p);
@@ -541,7 +557,7 @@ MapboxMap {
         if (!py.ready) return;
         py.call("poor.storage.read_route", [], function(data) {
             if (data.x && data.x.length > 0 &&
-                    data.y && data.y.length > 0)
+                data.y && data.y.length > 0)
                 map.addRoute(data);
         });
     }
@@ -586,7 +602,7 @@ MapboxMap {
         // Save route to JSON file.
         if (!py.ready) return;
         if (map.route.x && map.route.x.length > 0 &&
-                map.route.y && map.route.y.length > 0) {
+            map.route.y && map.route.y.length > 0) {
             var data = {};
             data.x = map.route.x;
             data.y = map.route.y;
@@ -626,19 +642,19 @@ MapboxMap {
         // on the screen and should see more ahead than behind.
         if (map.autoRotate) {
             margins = Qt.rect(
-                        0.1,               // x
-                        (menucut + 0.05*freeheight) / height,   // y
-                        0.8,                // width
-                        0.2*freeheight / height // height
-                        );
+                0.1,               // x
+                (menucut + 0.05*freeheight) / height,   // y
+                0.8,                // width
+                0.2*freeheight / height // height
+            );
 
         } else {
             margins = Qt.rect(
-                        0.1,               // x
-                        (menucut + 0.05*freeheight) / height,   // y
-                        0.8,                // width
-                        0.9*freeheight / height // height
-                        );
+                0.1,               // x
+                (menucut + 0.05*freeheight) / height,   // y
+                0.8,                // width
+                0.9*freeheight / height // height
+            );
         }
 
         map.margins = margins

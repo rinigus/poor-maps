@@ -636,7 +636,8 @@ MapboxMap {
 
         map.urlDebug = basemap.urlDebug || false;
         map.urlSuffix = basemap.urlSuffix || "";
-        map.styleReferenceLayer = basemap.styleReferenceLayer || "waterway-label";
+        if (typeof basemap.styleReferenceLayer !== 'undefined') map.styleReferenceLayer = basemap.styleReferenceLayer;
+        else map.styleReferenceLayer = "waterway-label";
         map.pixelRatio = basemap.pixelRatio || Theme.pixelRatio * 1.5
 
         map.initLayers();

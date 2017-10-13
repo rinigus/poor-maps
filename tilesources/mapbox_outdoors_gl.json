@@ -1,0 +1,7 @@
+{
+    "attribution": "© Mapbox © OpenStreetMap\nhttps://www.mapbox.com/about/maps/\nhttps://www.mapbox.com/map-feedback/",
+    "format": "mapbox",
+    "name": "Mapbox Outdoors GL",
+    "source": "mapbox.com",
+    "styleUrl": "mapbox://styles/mapbox/outdoors-v10"
+}

@@ -1,6 +1,5 @@
 {
     "attribution": "Data © OpenStreetMap contributors",
-    "extension": ".png",
     "format": "slippy",
     "_name": "OSM Scout day @2x",
     "requires": ["harbour-osmscout-server"],

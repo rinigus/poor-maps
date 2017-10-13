@@ -41,7 +41,7 @@ MapboxMap {
     // which is maybe around 1.5 in terms of map scales.
     pixelRatio: Theme.pixelRatio * 1.5
 
-    // TODO
+    // Access token has to be defined from the start of the application
     accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjajdkcHM0MWkwYjE4MzBwZml3OTRqOTc4In0.cjKiY1ZtOyS4KPJF0ewwQQ"
     styleUrl: "mapbox://styles/mapbox/streets-v10"
 
@@ -127,6 +127,7 @@ MapboxMap {
     PositionMarker { id: positionMarker }
 
     Component.onCompleted: {
+        map.initSources();
         map.initLayers();
         map.initProperties();
         map.updateMargins();
@@ -430,10 +431,10 @@ MapboxMap {
     }
 
     function initLayers() {
+        /// Init layers on the map. This should be called after initSources
+
         //////////////////////////////////////////////
         // POIs
-        map.addSourcePoints(constants.sourcePois, []);
-        map.addImagePath(constants.imagePoi, Qt.resolvedUrl(app.getIcon("icons/poi")))
 
         // since we have text labels, put the symbols on top
         map.addLayer(constants.layerPois, {"type": "symbol", "source": constants.sourcePois}); //, map.styleReferenceLayer);
@@ -451,8 +452,8 @@ MapboxMap {
 
         //////////////////////////////////////////////
         // Route
-        map.addSourceLine(constants.sourceRoute, []);
 
+        map.removeLayer(constants.layerRouteCase);
         map.addLayer(constants.layerRouteCase,
                      {"type": "line", "source": constants.sourceRoute}, map.styleReferenceLayer);
         map.setLayoutProperty(constants.layerRouteCase, "line-join", "round");
@@ -469,7 +470,6 @@ MapboxMap {
 
         //////////////////////////////////////////////
         // Maneuvers - drawn on top of the route
-        map.addSourcePoints(constants.sourceManeuvers, []);
 
         map.addLayer(constants.layerManeuvers,
                      {"type": "circle", "source": constants.sourceManeuvers}, map.styleReferenceLayer);
@@ -483,6 +483,7 @@ MapboxMap {
         // Load default values and start periodic updates.
         if (!py.ready)
             return py.onReadyChanged.connect(map.initProperties);
+        map.setBasemap();
         map.setZoomLevel(app.conf.get("zoom"));
         map.autoCenter = app.conf.get("auto_center");
         map.autoRotate = app.conf.get("auto_rotate");
@@ -500,6 +501,17 @@ MapboxMap {
         map.loadRoute();
         map.loadManeuvers();
         map.ready = true;
+    }
+
+    function initSources() {
+        /// Init sources that can be later referenced in the layers
+        /// This has to be run only once - running later would reset
+        /// roads and other sources
+
+        map.addSourcePoints(constants.sourcePois, []);
+        map.addImagePath(constants.imagePoi, Qt.resolvedUrl(app.getIcon("icons/poi")))
+        map.addSourceLine(constants.sourceRoute, []);
+        map.addSourcePoints(constants.sourceManeuvers, []);
     }
 
     function updateMapPois() {
@@ -613,6 +625,26 @@ MapboxMap {
             var data = {};
         }
         py.call_sync("poor.storage.write_route", [data]);
+    }
+
+    function setBasemap() {
+        // Set basemap and all properties specified in the
+        // basemap file
+        if (!py.ready) return;
+
+        var basemap = py.call_sync("poor.app.get_basemap", []);
+
+        map.urlDebug = basemap.urlDebug || false;
+        map.urlSuffix = basemap.urlSuffix || "";
+        map.styleReferenceLayer = basemap.styleReferenceLayer || "waterway-label";
+        map.pixelRatio = basemap.pixelRatio || Theme.pixelRatio * 1.5
+
+        map.initLayers();
+        positionMarker.init();
+
+        // only one of styleUrl or styleJson can be specified
+        if (basemap.styleUrl) map.styleUrl = basemap.styleUrl;
+        else map.styleJson = basemap.styleJson || "";
     }
 
     function setCenter(x, y) {

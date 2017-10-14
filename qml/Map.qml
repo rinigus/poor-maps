@@ -119,6 +119,13 @@ MapboxMap {
         }
     }
 
+    Behavior on margins {
+        PropertyAnimation {
+            duration: map.ready ? 500 : 0
+            easing.type: Easing.InOutQuad
+        }
+    }
+
     Behavior on pitch {
         NumberAnimation { duration: 1000 }
     }

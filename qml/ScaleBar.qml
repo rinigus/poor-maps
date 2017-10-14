@@ -28,6 +28,7 @@ Item {
     anchors.bottomMargin: Theme.paddingLarge
     anchors.left: parent.left
     anchors.leftMargin: Theme.paddingLarge
+    height: base.height + text.height + text.anchors.bottomMargin
     opacity: 0.9
     visible: scaleWidth > 0
     z: 100
@@ -37,6 +38,7 @@ Item {
 
     Rectangle {
         id: base
+        anchors.bottom: scaleBar.bottom
         color: "black"
         height: Math.floor(Theme.pixelRatio * 3)
         width: scaleBar.scaleWidth
@@ -59,6 +61,7 @@ Item {
     }
 
     Text {
+        id: text
         anchors.bottom: base.top
         anchors.bottomMargin: Math.floor(Theme.pixelRatio * 4)
         anchors.horizontalCenter: base.horizontalCenter

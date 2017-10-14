@@ -1,5 +1,6 @@
 {
     "attribution": "Data © OpenStreetMap contributors",
+    "attributionFull": "<a href=https://github.com/rinigus/osmscout-server>OSM Scout Server</a><br><a href=http://www.openstreetmap.org/copyright>© OpenStreetMap</a>",
     "format": "slippy",
     "_name": "OSM Scout day @2x",
     "requires": ["harbour-osmscout-server"],

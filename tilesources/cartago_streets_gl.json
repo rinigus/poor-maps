@@ -1,5 +1,6 @@
 {
     "attribution": "© Osmo Salomaa © OpenMapTiles © OpenStreetMap",
+    "attributionFull": "© Osmo Salomaa<br><a href=https://openmaptiles.org/about>© OpenMapTiles</a><br><a href=http://www.openstreetmap.org/copyright>© OpenStreetMap</a>",
     "format": "mapbox",
     "name": "Cartago Streets GL",
     "source": "cartago.io",

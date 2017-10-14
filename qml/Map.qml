@@ -221,8 +221,9 @@ MapboxMap {
                 }
             }
 
-            // Unknown click - let's close all POI dialogs
+            // Unknown click - let's close all POI dialogs and info bubble for attribution
             map.hidePoiBubbles();
+            attribution.clearInfo();
         }
 
         onPressAndHoldGeo: map.addPois([{
@@ -653,6 +654,9 @@ MapboxMap {
         // only one of styleUrl or styleJson can be specified
         if (basemap.styleUrl) map.styleUrl = basemap.styleUrl;
         else map.styleJson = basemap.styleJson || "";
+
+        attribution.setInfo(basemap.attributionFull || basemap.attribution);
+        attribution.setLogo(basemap.attributionLogo || "");
     }
 
     function setCenter(x, y) {

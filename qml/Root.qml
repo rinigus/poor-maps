@@ -46,6 +46,7 @@ Item {
             }
         }
 
+        Attribution { id: attribution }
         Map { id: map }
         MenuButton { id: menuButton }
         Meters { id: meters }

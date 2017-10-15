@@ -34,15 +34,12 @@ except ImportError:
 from poor.paths import *
 from poor import i18n
 from poor import util
-from poor import cache
 from poor import http
 from poor import polysimp
 from poor import storage
 from poor.attrdict import *
 from poor.config import *
 conf = ConfigurationStore()
-from poor.tilecollection import *
-from poor.tilesource import *
 from poor.geocoder import *
 from poor.guide import *
 from poor.history import *

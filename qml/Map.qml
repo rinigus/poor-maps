@@ -45,9 +45,8 @@ MapboxMap {
     accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjajdkcHM0MWkwYjE4MzBwZml3OTRqOTc4In0.cjKiY1ZtOyS4KPJF0ewwQQ"
     styleUrl: "mapbox://styles/mapbox/streets-v10"
 
-    // TODO
-    cacheDatabaseMaximalSize: 20*1024*1024
-    cacheDatabasePath: "/tmp/mbgl-cache.db"
+    cacheDatabaseStoreSettings: true
+    cacheDatabaseDefaultPath: true
     
     property bool autoCenter: false
     property bool autoRotate: false

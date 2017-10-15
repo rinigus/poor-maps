@@ -47,7 +47,6 @@ Item {
 
         // add layers
 
-        // TODO: see if we can have some layer before which we insert
         map.addLayer(constants.layerUncertainty, {"type": "circle", "source": constants.sourceName}, map.styleReferenceLayer);
         map.setPaintProperty(constants.layerUncertainty, "circle-radius", 0);
         map.setPaintProperty(constants.layerUncertainty, "circle-color", "#87cefa");
@@ -75,6 +74,10 @@ Item {
         map.setLayoutProperty(constants.layerMoving, "visibility", "none");
 
         directionVisible = false;
+
+        // set current values
+        setUncertainty();
+        setLayers();
     }
 
     function setUncertainty() {
@@ -115,8 +118,6 @@ Item {
 
     Component.onCompleted: {
         init();
-        setUncertainty();
-        setLayers();
     }
 
     Connections {
@@ -130,7 +131,5 @@ Item {
         onMetersPerPixelChanged: setUncertainty()
 
         onDirectionChanged: setLayers()
-
-        onStyleReferenceLayerChanged: init();
     }
 }

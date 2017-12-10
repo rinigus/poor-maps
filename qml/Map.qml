@@ -42,12 +42,12 @@ MapboxMap {
     pixelRatio: Theme.pixelRatio * 1.5
 
     // Access token has to be defined from the start of the application
-    accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjajdkcHM0MWkwYjE4MzBwZml3OTRqOTc4In0.cjKiY1ZtOyS4KPJF0ewwQQ"
+    accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjamIwbmUyYWM4ajZoMnhyMXVoZGtybXJqIn0.CfG6j_Kyg_Ho_ksH_8_iyw"
     styleUrl: "mapbox://styles/mapbox/streets-v10"
 
     cacheDatabaseStoreSettings: true
     cacheDatabaseDefaultPath: true
-    
+
     property bool autoCenter: false
     property bool autoRotate: false
     property bool centerFound: true
@@ -180,7 +180,7 @@ MapboxMap {
 
         activeClickedGeo: true
         activePressAndHoldGeo: true
-        
+
         onDoubleClicked: map.centerOnPosition()
 
         onClickedGeo: {
@@ -231,9 +231,9 @@ MapboxMap {
             "title": app.tr("Unnamed point"),
             "text": app.tr("Unnamed point")
         }])
-        
+
     }
-    
+
     function addManeuvers(maneuvers) {
         /*
          * Add new maneuver markers to map.

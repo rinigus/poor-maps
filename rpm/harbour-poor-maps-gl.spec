@@ -23,6 +23,9 @@ Requires: qt5-qtdeclarative-import-location
 Requires: qt5-qtdeclarative-import-positioning >= 5.2
 Requires: qt5-qtdeclarative-import-multimedia >= 5.2
 Requires: sailfishsilica-qt5
+Requires: mapboxgl-qml
+Requires: mimic
+Requires: picotts
 
 %description
 View maps, find places and routes, navigate with turn-by-turn instructions,

@@ -1,6 +1,6 @@
 # -*- coding: us-ascii-unix -*-
 
-NAME       = harbour-poor-maps
+NAME       = harbour-poor-maps-gl
 VERSION    = 0.33
 LANGS      = $(basename $(notdir $(wildcard po/*.po)))
 POT_FILE   = po/poor-maps.pot

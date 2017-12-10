@@ -4,7 +4,7 @@
 # "Harbour RPM packages should not provide anything."
 %define __provides_exclude_from ^%{_datadir}/.*$
 
-Name: harbour-poor-maps
+Name: harbour-poor-maps-gl
 Version: 0.33
 Release: 1
 Summary: Maps and navigation

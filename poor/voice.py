@@ -99,7 +99,7 @@ class VoiceEngineEnUsPirate(VoiceEngineBase):
                 text = text.replace(" %s " % word, ' <phoneme ph="%s">phonemes-given</phoneme> ' % ph)
             else:
                 text = re.sub(r"\b%s\b" % word, '<phoneme ph="%s">phonemes-given</phoneme>' % ph, text)
-        return text        
+        return text
 
 
 ##############################################################################
@@ -288,7 +288,7 @@ class VoiceDirection:
                          VoiceEngineFlite(), VoiceEngineFliteEnUsPirate(),
                          VoiceEnginePicoTTS(), VoiceEngineEspeak() ]
         self.engine = None
-        self.tmpdir = tempfile.mkdtemp(prefix="poor-maps-")
+        self.tmpdir = tempfile.mkdtemp(prefix="poor-maps-gl-")
         self.worker_thread = None
         self.queue_tasks = None
         self.queue_results = None

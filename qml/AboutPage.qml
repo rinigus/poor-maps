@@ -33,7 +33,30 @@ Page {
             width: parent.width
 
             PageHeader {
-                title: app.tr("About Poor Maps")
+                title: app.tr("About Poor Maps GL")
+            }
+
+            ListItemLabel {
+                font.pixelSize: Theme.fontSizeSmall
+                height: implicitHeight + Theme.paddingLarge
+                horizontalAlignment: implicitWidth >
+                    parent.width - anchors.leftMargin - anchors.rightMargin ?
+                    Text.AlignLeft : Text.AlignHCenter
+                text: app.tr("Poor Maps GL should be considered as a preview of upcoming Mapbox GL-based map application. " +
+                            "This is not a permanent fork and is released with the hope of being useful until this functionality is merged to Poor Maps.")
+                wrapMode: Text.WordWrap
+            }
+
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: Theme.itemSizeLarge
+                preferredWidth: Theme.buttonWidthMedium
+                text: app.tr("GitHub page for GL")
+                onClicked: Qt.openUrlExternally("https://github.com/rinigus/poor-maps/tree/gl");
+            }
+
+            SectionHeader {
+                text: app.tr("About Poor Maps")
             }
 
             ListItemLabel {

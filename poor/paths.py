@@ -25,8 +25,8 @@ XDG_CACHE_HOME = os.path.expanduser(os.getenv("XDG_CACHE_HOME", "~/.cache"))
 XDG_CONFIG_HOME = os.path.expanduser(os.getenv("XDG_CONFIG_HOME", "~/.config"))
 XDG_DATA_HOME = os.path.expanduser(os.getenv("XDG_DATA_HOME", "~/.local/share"))
 
-CACHE_HOME_DIR = os.path.join(XDG_CACHE_HOME, "harbour-poor-maps")
-CONFIG_HOME_DIR = os.path.join(XDG_CONFIG_HOME, "harbour-poor-maps")
+CACHE_HOME_DIR = os.path.join(XDG_CACHE_HOME, "harbour-poor-maps-gl")
+CONFIG_HOME_DIR = os.path.join(XDG_CONFIG_HOME, "harbour-poor-maps-gl")
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DATA_HOME_DIR = os.path.join(XDG_DATA_HOME, "harbour-poor-maps")
-LOCALE_DIR = "/usr/share/harbour-poor-maps/locale"
+DATA_HOME_DIR = os.path.join(XDG_DATA_HOME, "harbour-poor-maps-gl")
+LOCALE_DIR = "/usr/share/harbour-poor-maps-gl/locale"

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Poor Maps GL
+Exec=sailfish-qml harbour-poor-maps-gl
+Icon=harbour-poor-maps-gl
+Type=Application
+X-Nemo-Application-Type=silica-qt5

@@ -71,9 +71,9 @@ ApplicationWindow {
 
     Audio {
         id: sound
-        loops: 1
         autoLoad: true
         autoPlay: true
+        loops: 1
     }
 
     Component.onCompleted: {
@@ -125,10 +125,20 @@ ApplicationWindow {
         root.visible = true;
     }
 
+    function playMaybe(message) {
+        // Play message via TTS engine if applicable.
+        if (!app.conf.get("voice_navigation")) return;
+        var fun = "poor.app.narrative.get_message_voice_uri";
+        py.call(fun, [message], function(uri) {
+            if (uri) sound.source = uri;
+        });
+    }
+
     function reroute() {
         // Find a new route from the current position to the existing destination.
         if (app.rerouting) return;
         app.notification.hold(app.tr("Rerouting"));
+        app.playMaybe("Rerouting");
         app.rerouting = true;
         // Note that rerouting does not allow us to relay params to the router,
         // i.e. ones saved only temporarily as page.params in RoutePage.qml.
@@ -140,14 +150,17 @@ ApplicationWindow {
                 route = route[0];
             if (route && route.error && route.message) {
                 app.notification.flash(app.tr("Rerouting failed: %1").arg(route.message));
+                app.playMaybe("Rerouting failed");
                 app.rerouteConsecutiveErrors++;
             } else if (route && route.x && route.x.length > 0) {
                 app.notification.flash(app.tr("New route found"));
+                app.playMaybe("New route found");
                 map.addRoute(route, true);
                 map.addManeuvers(route.maneuvers);
                 app.rerouteConsecutiveErrors = 0;
             } else {
                 app.notification.flash(app.tr("Rerouting failed"));
+                app.playMaybe("Rerouting failed");
                 app.rerouteConsecutiveErrors++;
             }
             app.reroutePreviousTime = Date.now();
@@ -234,11 +247,9 @@ ApplicationWindow {
         if (app.showNarrative === null)
             app.showNarrative = app.conf.get("show_narrative");
         app.navigationStatus.update(status);
+        if (app.navigationStatus.voiceUri)
+            sound.source = app.navigationStatus.voiceUri;
         app.navigationStatus.reroute && app.rerouteMaybe();
-        // voice is used only here by setting corresponding sound source
-        if (status && status.voice_to_play) {
-            sound.source = "file://" + status.voice_to_play
-        }        
     }
 
 }

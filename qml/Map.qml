@@ -250,13 +250,14 @@ MapboxMap {
         for (var i = 0; i < maneuvers.length; i++) {
             var maneuver = {
                 "coordinate": QtPositioning.coordinate(maneuvers[i].y, maneuvers[i].x),
+                "duration": maneuvers[i].duration || 0,
                 "icon": maneuvers[i].icon || "flag",
                 "narrative": maneuvers[i].narrative || "",
                 "passive": maneuvers[i].passive || false,
                 "duration": maneuvers[i].duration || 0,
-                "verbal_alert": maneuvers[i].verbal_alert || "",
-                "verbal_pre": maneuvers[i].verbal_pre || "",
-                "verbal_post": maneuvers[i].verbal_post || ""
+                "verbalAlert": maneuvers[i].verbal_alert || "",
+                "verbalPost": maneuvers[i].verbal_post || "",
+                "verbalPre": maneuvers[i].verbal_pre || ""
             };
             map.maneuvers.push(maneuver);
         }
@@ -309,8 +310,8 @@ MapboxMap {
         map.route.x = route.x;
         map.route.y = route.y;
         map.route.attribution = route.attribution || "";
+        map.route.language = route.language || "en";
         map.route.mode = route.mode || "car";
-        map.route.language = route.language;
         py.call_sync("poor.app.narrative.set_mode", [route.mode || "car"]);
         py.call("poor.app.narrative.set_route", [route.x, route.y], function() {
             map.hasRoute = true;
@@ -327,12 +328,13 @@ MapboxMap {
         map.centerOnPosition();
         map.autoCenter = true;
         map.autoRotate = true;
-        if (app.conf.get("voice_directions")) {
-            py.call_sync("poor.app.narrative.set_voice", [route.language, app.conf.get("voice_gender")], null);
+        if (app.conf.get("voice_navigation")) {
+            var args = [route.language, app.conf.get("voice_gender")];
+            py.call_sync("poor.app.narrative.set_voice", args);
+            app.notification.flash(app.tr("Voice navigation on"));
         } else {
-            py.call_sync("poor.app.narrative.set_voice", [null])
+            py.call_sync("poor.app.narrative.set_voice", [null, null]);
         }
-        py.call("poor.app.narrative.begin", null, null);
         app.navigationActive = true;
         app.navigationPageSeen = true;
         app.navigationStarted = true;
@@ -386,7 +388,6 @@ MapboxMap {
         map.autoCenter = false;
         map.autoRotate = false;
         map.zoomLevel > 15 && map.setZoomLevel(15);
-        py.call("poor.app.narrative.end", null, null);
         app.navigationActive = false;
     }
 
@@ -589,13 +590,13 @@ MapboxMap {
             var maneuver = {};
             maneuver.x = map.maneuvers[i].coordinate.longitude;
             maneuver.y = map.maneuvers[i].coordinate.latitude;
+            maneuver.duration = map.maneuvers[i].duration;
             maneuver.icon = map.maneuvers[i].icon;
             maneuver.narrative = map.maneuvers[i].narrative;
-            maneuver.duration = map.maneuvers[i].duration;
             maneuver.passive = map.maneuvers[i].passive;
-            maneuver.verbal_alert = map.maneuvers[i].verbal_alert;
-            maneuver.verbal_pre = map.maneuvers[i].verbal_pre;
-            maneuver.verbal_post = map.maneuvers[i].verbal_post;
+            maneuver.verbal_alert = map.maneuvers[i].verbalAlert;
+            maneuver.verbal_post = map.maneuvers[i].verbalPost;
+            maneuver.verbal_pre = map.maneuvers[i].verbalPre;
             data.push(maneuver);
         }
         py.call_sync("poor.storage.write_maneuvers", [data]);
@@ -626,8 +627,8 @@ MapboxMap {
             data.x = map.route.x;
             data.y = map.route.y;
             data.attribution = map.route.attribution;
+            data.language = map.route.language;
             data.mode = map.route.mode;
-            data.language = map.route.language
         } else {
             var data = {};
         }

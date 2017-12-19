@@ -201,31 +201,11 @@ Page {
             }
 
             TextSwitch {
-                id: voiceDirectionsSwitch
+                id: voiceNavigationSwitch
+                checked: app.conf.get("voice_navigation")
                 enabled: !app.navigationActive
-                checked: enabled && app.conf.get("voice_directions")
-                text: app.tr("Voice navigation directions")
-                onCheckedChanged: enabled && app.conf.set("voice_directions", voiceDirectionsSwitch.checked);
-            }
-
-            ComboBox {
-                id: voiceGenderComboBox
-                enabled: voiceDirectionsSwitch.checked && !app.navigationActive
-                description: app.tr("Preferred gender for the voice prompts during navigation instructions. Note that some languages and voice synthesizers have only one voice and selection of a gender is not possible.")
-                label: app.tr("Voice gender")
-                menu: ContextMenu {
-                    MenuItem { text: app.tr("Male") }
-                    MenuItem { text: app.tr("Female") }
-                }
-                property var values: ["male", "female"]
-                Component.onCompleted: {
-                    var value = app.conf.get("voice_gender");
-                    voiceGenderComboBox.currentIndex = voiceGenderComboBox.values.indexOf(value);
-                }
-                onCurrentIndexChanged: {
-                    var index = voiceGenderComboBox.currentIndex;
-                    app.conf.set("voice_gender", voiceGenderComboBox.values[index]);
-                }
+                text: app.tr("Voice navigation instructions")
+                onCheckedChanged: enabled && app.conf.set("voice_navigation", voiceNavigationSwitch.checked);
             }
 
             TextSwitch {

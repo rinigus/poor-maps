@@ -34,21 +34,18 @@ def _(message):
     return _translation.gettext(message)
 
 def __(message, language):
-    """Return the translation of `message` to `language`. Note that the same
-    notation is used for languages, as in the voice module"""
-    # exceptions
-    l = {
-        "de": "de_DE",
-        "en": "en_US",
-        "en-US": "en_US",
-        "en-US-x-pirate": "en_US",
-        "es": "es_ES",
-        }
+    """Return the translation of `message` to `language`."""
+    # Try to account for differences between provider API languages
+    # and our translations, allowing some amount of fuzziness, e.g.
+    # for German try "de" and "de_DE" in addition to the requested.
+    plain = language.split("_")[0]
+    origin = "{}_{}".format(plain, plain.upper())
+    if not language in _foreign_translations:
+        _foreign_translations[language] = gettext.translation(
+            "poor-maps",
+            localedir=poor.LOCALE_DIR,
+            languages=[language, plain, origin],
+            fallback=True)
 
-    lang = l.get(language, language)
-    if not lang in _foreign_translations:
-        _foreign_translations[lang] = gettext.translation( "poor-maps",
-                                                           localedir=poor.LOCALE_DIR,
-                                                           languages=lang,
-                                                           fallback=True )
-    return _foreign_translations[lang].gettext(message)
+    translation = _foreign_translations[language]
+    return translation.gettext(message)
